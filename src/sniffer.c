@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sniffer.h"
+#include "radiotap-parser.h"
 
 
 static void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+
+static int get_rssi(const u_char *packet, int len, int8_t *rssi);
 
 static int capture_packet_counter=0;
 
@@ -61,7 +64,7 @@ pcap_t * SnifferInit(char *dev){
 //----------------------------------
 
 int SnifferStart(pcap_t * handle){
-    pcap_loop(handle,10,packet_process,NULL);
+    pcap_loop(handle,20,packet_process,NULL);   
     return 0;
 }
 
@@ -83,10 +86,22 @@ int SnifferClose(pcap_t * handle){
 //----------------------------------
 
 void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
+    int status=0;
+    int8_t rssi=0;
     ++capture_packet_counter;
     printf("Packet %d:\n",capture_packet_counter);
     if(header!=0 && packet!=0){        
-        printf("\t len=%d\n\tcaplen=%d\n",header->len,header->caplen);
+        status=get_rssi(packet,header->len,&rssi);
+        if(status!=0){
+            if(status==-1){
+                printf("\tNo RSSI\n\n");   //Дропаем пакет, он нам не интересен.
+                return;
+            }
+            else{
+                printf("Error %d\n",status);
+            }
+        }
+        printf("\tlen=%d \n\tcaplen=%d \n\tRSSI=%i\n",header->len,header->caplen,rssi,status);        
     }
     else{
         if(!header){            
@@ -96,4 +111,33 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
             printf("Error: no packet\n");            
         }
     }
+    
+}
+
+/*Возвращает 0 в случае успешного получения RSSI, иначе возвращает код ошибки.
+ * -1 RSSI  не найден
+ */
+static int get_rssi(const u_char *packet, int len, int8_t*rssi){
+    int status=0, next_arg_index=0;
+
+    struct ieee80211_radiotap_header *header=(struct ieee80211_radiotap_header *)packet;
+
+    struct ieee80211_radiotap_iterator iterator;
+    
+    if(ieee80211_radiotap_iterator_init(&iterator,header,len)){
+        return status;
+    }
+    
+    status=-1;
+    do{
+        next_arg_index=ieee80211_radiotap_iterator_next(&iterator);        
+        if(iterator.this_arg_index==IEEE80211_RADIOTAP_DBM_ANTSIGNAL){
+            *rssi=*iterator.this_arg;                        
+            status=0;
+            break;           
+        }
+    }while(next_arg_index>=0);
+    
+    
+    return status;
 }

@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #include <pcap/pcap.h>
-
+    
     pcap_t * SnifferInit(char *dev);
     int SnifferClose(pcap_t *handle);
     int SnifferStart(pcap_t *handle);
