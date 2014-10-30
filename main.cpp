@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sniffer.h"
-
+#include "debug.h"
 
 using namespace std;
 
@@ -25,10 +25,10 @@ int main(int argc, char** argv) {
     
     handle=SnifferInit(dev);
     if(handle==0){
-        printf("Error, while opening device %s\n",dev);
+        DEBUG_PRINT("Error, while opening device %s\n",dev);
         return 1;
     }
-     
+    DEBUG_PRINT("TEST"); 
     SnifferStart(handle);       
         
     SnifferClose(handle);    
