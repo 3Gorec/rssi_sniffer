@@ -64,7 +64,7 @@ pcap_t * SnifferInit(char *dev){
 //----------------------------------
 
 int SnifferStart(pcap_t * handle){
-    pcap_loop(handle,20,packet_process,NULL);   
+    pcap_loop(handle,10000,packet_process,NULL);   
     return 0;
 }
 
@@ -92,15 +92,22 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
     DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
     if(header!=0 && packet!=0){        
         status=get_rssi(packet,header->len,&rssi);        
-        if(status!=0){
-            if(status==-1){
+        switch(status){
+            case 0:
+                break;
+            case -1:
                 DEBUG_PRINT("\tNo RSSI\n\n");   //Дропаем пакет, в нем нет RSSI.
                 return;
-            }
-            else{
+                break;
+            case -2:
+                DEBUG_PRINT("\tCRC Error\n\n");   //Дропаем пакет, в нем нет RSSI.
+                return;
+                break;
+            default:
                 DEBUG_PRINT("\tError %d\n",status);
                 return;
-            }
+                break;
+                
         }        
         DEBUG_PRINT("\tlen=%d \n\tcaplen=%d \n\tRSSI=%i\n",header->len,header->caplen,rssi);        
     }
@@ -130,16 +137,25 @@ static int get_rssi(const u_char *packet, int len, int8_t*rssi){
         return status;
     }
     
-    status=-1;
+    
     do{
         next_arg_index=ieee80211_radiotap_iterator_next(&iterator);        
-        if(iterator.this_arg_index==IEEE80211_RADIOTAP_DBM_ANTSIGNAL){
-            *rssi=*iterator.this_arg;                                                
-            status=0;
-            break;           
+        switch(iterator.this_arg_index){        
+            case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
+                *rssi=*iterator.this_arg;                                                    
+                return 0;
+                break;           
+            case IEEE80211_RADIOTAP_RX_FLAGS:
+                if((*iterator.this_arg)!=0){
+                    return -2;
+                }
+                break;
+            default:
+                break;
         }
+        
     }while(next_arg_index>=0);
     
     
-    return status;
+    return -1;
 }
