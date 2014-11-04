@@ -91,16 +91,17 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
     ++capture_packet_counter;
     DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
     if(header!=0 && packet!=0){        
-        status=get_rssi(packet,header->len,&rssi);
+        status=get_rssi(packet,header->len,&rssi);        
         if(status!=0){
             if(status==-1){
-                DEBUG_PRINT("\tNo RSSI\n\n");   //Дропаем пакет, он нам не интересен.
+                DEBUG_PRINT("\tNo RSSI\n\n");   //Дропаем пакет, в нем нет RSSI.
                 return;
             }
             else{
-                DEBUG_PRINT("Error %d\n",status);
+                DEBUG_PRINT("\tError %d\n",status);
+                return;
             }
-        }
+        }        
         DEBUG_PRINT("\tlen=%d \n\tcaplen=%d \n\tRSSI=%i\n",header->len,header->caplen,rssi);        
     }
     else{
@@ -124,7 +125,8 @@ static int get_rssi(const u_char *packet, int len, int8_t*rssi){
 
     struct ieee80211_radiotap_iterator iterator;
     
-    if(ieee80211_radiotap_iterator_init(&iterator,header,len)){
+    status=ieee80211_radiotap_iterator_init(&iterator,header,len);
+    if(status){       
         return status;
     }
     
@@ -132,7 +134,7 @@ static int get_rssi(const u_char *packet, int len, int8_t*rssi){
     do{
         next_arg_index=ieee80211_radiotap_iterator_next(&iterator);        
         if(iterator.this_arg_index==IEEE80211_RADIOTAP_DBM_ANTSIGNAL){
-            *rssi=*iterator.this_arg;                        
+            *rssi=*iterator.this_arg;                                                
             status=0;
             break;           
         }
