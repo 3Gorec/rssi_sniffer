@@ -34,26 +34,29 @@ typedef struct{
 
 
 /*!Колбек для обработки пакектов, вытаскивает из них RSSI  и MAC если возможно*/
-static void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+static void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 /*!Возвращает 0 в случае успешного получения RSSI, иначе возвращает код ошибки.
  * -1 RSSI  не найден
  * rt_header_len - указатель на переменную в которую ф-я вернет длину radiotap хидера
  */
-static int get_rssi(const u_char *packet, int len, int8_t *rssi, uint16_t *rt_header_len);
+static int GetRSSI(const u_char *packet, int len, int8_t *rssi, uint16_t *rt_header_len);
 
 /*!Вытаскивает из пакета mac источника, если возможно
  * packet - указатель на 802_11 frame (БЕЗ radiotap  хидера)
  * len - длина фрейма (БЕЗ учета radiotap хидера)
  * src_mac - указатель на массив, куда функция вернет mac отправителя
  */
-static int get_mac(const u_char *packet, int len, uint8_t *src_mac);
+static int GetMAC(const u_char *packet, int len, uint8_t *src_mac);
 
 /*!Копирует MAC адрес, из пакета в память*/
-static void copy_mac(const u_char *mac_addr_p, uint8_t *src_mac);
+static void CopyMAC(const u_char *mac_addr_p, uint8_t *src_mac);
 
 /*!Выводит RSSI и MAC в консоль*/
-static void print_captured_data(sCapturedRSSI *rssi_data);
+static void PrintCapturedData(sCapturedRSSI *rssi_data);
+
+/*!Добавляет заснифаные данные к массиву сохраненных данных. Манипулирует массивами при необходимости*/
+static void AddToDataSet(sCapturedRSSI *rssi_data);
 
 static int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
 
@@ -114,7 +117,7 @@ pcap_t * SnifferInit(char *dev){
 //----------------------------------
 
 int SnifferStart(pcap_t * handle){
-    pcap_loop(handle,100,packet_process,NULL);    
+    pcap_loop(handle,100,PacketProcess,NULL);    
     return 0;
 }
 
@@ -135,7 +138,7 @@ int SnifferClose(pcap_t * handle){
 
 //----------------------------------
 
-void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
+void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
     int status=0;
     //int8_t rssi=0;    
     uint16_t rt_header_len;
@@ -145,7 +148,7 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
     ++capture_packet_counter;
     DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
     if(header!=0 && packet!=0){        
-        status=get_rssi(packet,header->len,&rssi_data.rssi,&rt_header_len);       //Получение RSSI  
+        status=GetRSSI(packet,header->len,&rssi_data.rssi,&rt_header_len);       //Получение RSSI  
         switch(status){
             case 0:
                 break;
@@ -164,7 +167,7 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
                 
         }    
         
-        status=get_mac(packet+rt_header_len, header->len-rt_header_len,&rssi_data.mac);
+        status=GetMAC(packet+rt_header_len, header->len-rt_header_len,&rssi_data.mac);
         switch(status){
             case 0:
                 break;
@@ -177,7 +180,7 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
                 return;
                 break;    
         }
-        print_captured_data(&rssi_data);
+        PrintCapturedData(&rssi_data);
         
     }
     else{
@@ -193,7 +196,7 @@ void packet_process(u_char *args, const struct pcap_pkthdr *header, const u_char
 
 //----------------------------------
 
-int get_rssi(const u_char *packet, int len, int8_t*rssi, uint16_t *rt_header_len){
+int GetRSSI(const u_char *packet, int len, int8_t*rssi, uint16_t *rt_header_len){
     int status=0, next_arg_index=0;
 
     struct ieee80211_radiotap_header *header=(struct ieee80211_radiotap_header *)packet;
@@ -231,7 +234,7 @@ int get_rssi(const u_char *packet, int len, int8_t*rssi, uint16_t *rt_header_len
 
 //----------------------------------
 
-int get_mac(const u_char *packet, int len, uint8_t *src_mac){
+int GetMAC(const u_char *packet, int len, uint8_t *src_mac){
     uint8_t type=0,subtype=0;    
     char from_ds_flag=0;
     type = ((*(uint16_t *)packet) >> 2) & (0x0003);
@@ -243,7 +246,7 @@ int get_mac(const u_char *packet, int len, uint8_t *src_mac){
     
     switch(type){
         case 0x0:   //management frames
-            copy_mac(packet+10,src_mac);  //TA MAC offset for management frames = 10
+            CopyMAC(packet+10,src_mac);  //TA MAC offset for management frames = 10
             break;
             
         case 0x1:
@@ -252,7 +255,7 @@ int get_mac(const u_char *packet, int len, uint8_t *src_mac){
                 case 0x9:   //BlockAck                    
                 case 0xA:   //PS-Poll                    
                 case 0xB:   //RTS
-                    copy_mac(packet+10,src_mac);  
+                    CopyMAC(packet+10,src_mac);  
                     break;
                 case 0x7:   //wrapper
                 case 0xC:   //CTS                
@@ -267,7 +270,7 @@ int get_mac(const u_char *packet, int len, uint8_t *src_mac){
             
         case 0x2:
             if(!from_ds_flag){
-                copy_mac(packet+10,src_mac);  
+                CopyMAC(packet+10,src_mac);  
             }
             else{
                 return -2;   //Не содержит MAC источника
@@ -283,7 +286,7 @@ int get_mac(const u_char *packet, int len, uint8_t *src_mac){
 
 //----------------------------------
 
-void copy_mac(const u_char *mac_addr_p, uint8_t *src_mac){
+void CopyMAC(const u_char *mac_addr_p, uint8_t *src_mac){
     int i=0;
     for(i=0;i<6;++i,++mac_addr_p){
         src_mac[i]=*((uint8_t *)mac_addr_p);
@@ -292,7 +295,7 @@ void copy_mac(const u_char *mac_addr_p, uint8_t *src_mac){
 
 //----------------------------------
 
-static void print_captured_data(sCapturedRSSI *rssi_data){
+static void PrintCapturedData(sCapturedRSSI *rssi_data){
     uint8_t *mac=rssi_data->mac;
     DEBUG_PRINT("\tRSSI = %i\n",rssi_data->rssi);
     DEBUG_PRINT("\tSource MAC = %X:%X:%X:%X:%X:%X\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
