@@ -11,6 +11,7 @@
 
 //----------------DEFINES-----------------------
 
+#define MAX_RSSI_RECORDS_PER_INTERVAL   1000   
 
 //----------------TYPES-------------------------
 
@@ -29,6 +30,19 @@ typedef struct{
    sCapturedRSSI rssi_data[MAX_RSSI_RECORDS_PER_INTERVAL];  
 }sCapturedDataSet;  //todo возможно стоит добавить выравнивание
 
+
+//----------------GLOBAL VARS-------------------
+
+static int capture_inerval_s=1;
+
+static int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
+
+static struct timeval cur_ts={0,0};
+
+static sCapturedDataSet data_set_0={.valid=0,.ts={0,0},.records_count=0};
+static sCapturedDataSet data_set_1={.valid=0,.ts={0,0},.records_count=0};;
+static sCapturedDataSet *ready_ds=0;
+static sCapturedDataSet *process_ds=&data_set_0;
 
 //----------------PROTOTYPES--------------------
 
@@ -56,9 +70,7 @@ static void CopyMAC(const u_char *mac_addr_p, uint8_t *src_mac);
 static void PrintCapturedData(sCapturedRSSI *rssi_data);
 
 /*!Добавляет заснифаные данные к массиву сохраненных данных. Манипулирует массивами при необходимости*/
-static void AddToDataSet(sCapturedRSSI *rssi_data);
-
-static int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
+static void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts);
 
 
 
@@ -167,12 +179,12 @@ void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char 
                 
         }    
         
-        status=GetMAC(packet+rt_header_len, header->len-rt_header_len,&rssi_data.mac);
+        status=GetMAC(packet+rt_header_len, header->len-rt_header_len,rssi_data.mac);
         switch(status){
             case 0:
                 break;
             case -2:
-                DEBUG_PRINT("\tExtract MAC error: frame doesn't contain source MAC\n",status);
+                DEBUG_PRINT("\tExtract MAC error: frame doesn't contain source MAC\n");
                 return;
                 break;
             default:
@@ -182,6 +194,7 @@ void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char 
         }
         PrintCapturedData(&rssi_data);
         
+        AddToDataSet(&rssi_data,header->ts);
     }
     else{
         if(!header){            
@@ -295,8 +308,38 @@ void CopyMAC(const u_char *mac_addr_p, uint8_t *src_mac){
 
 //----------------------------------
 
-static void PrintCapturedData(sCapturedRSSI *rssi_data){
+void PrintCapturedData(sCapturedRSSI *rssi_data){
     uint8_t *mac=rssi_data->mac;
     DEBUG_PRINT("\tRSSI = %i\n",rssi_data->rssi);
     DEBUG_PRINT("\tSource MAC = %X:%X:%X:%X:%X:%X\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 }
+
+//----------------------------------
+
+void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
+    if(cur_ts.tv_sec==0){   //В случае если данная запись - первая с запуска программы
+        cur_ts=ts;
+        process_ds->ts=ts;
+    }
+        
+    if(ts.tv_sec-cur_ts.tv_sec>=capture_inerval_s){   //Начало нового секундного интервала
+        cur_ts=ts;
+        process_ds->valid=1;
+        ready_ds=process_ds;
+        if(process_ds==&data_set_0){   
+            process_ds=&data_set_1;
+        }
+        else{
+            process_ds=&data_set_0;
+        }
+        process_ds->valid=0;
+        process_ds->ts=ts;
+        process_ds->records_count=0;
+    }
+    if(process_ds->records_count<MAX_RSSI_RECORDS_PER_INTERVAL){    //сохранение данных за текущий интервал
+        process_ds->rssi_data[process_ds->records_count]=*rssi_data;
+        ++process_ds->records_count;
+    }
+}
+
+//----------------------------------

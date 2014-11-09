@@ -14,7 +14,6 @@ extern "C" {
 
 #include <pcap/pcap.h>
   
-#define MAX_RSSI_RECORDS_PER_INTERVAL   2000   
     
     pcap_t * SnifferInit(char *dev);
     int SnifferClose(pcap_t *handle);
