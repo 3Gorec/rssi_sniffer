@@ -12,10 +12,12 @@
 extern "C" {
 #endif
 
+    
 #ifdef DEBUG
-#define DEBUG_TEST 1
+    #define DEBUG_TEST 1
+    #include <stdio.h>
 #else
-#define DEBUG_TEST 0
+    #define DEBUG_TEST 0
 #endif
     
 #define DEBUG_PRINT(...) \

@@ -37,11 +37,11 @@ int main(int argc, char** argv) {
         return 0;
     }
     
-    SnifferStart(handle);       
+    //SnifferStart(handle);       
       
-    SnifferClose(handle);    
+    //SnifferClose(handle);    
     
-    
-    return 0;     
+    pthread_exit(NULL);
+    //return 0;     
 }
 
