@@ -14,15 +14,20 @@ extern "C" {
 
     
 #ifdef DEBUG
-    #define DEBUG_TEST 1
+    #define DEBUG_TEST  1
+    #define DEBUG_ERROR 1
     #include <stdio.h>
 #else
     #define DEBUG_TEST 0
+    #define DEBUG_ERROR 1
 #endif
     
 #define DEBUG_PRINT(...) \
-            do { if (DEBUG_TEST) fprintf(stderr, ##__VA_ARGS__); } while (0)
+            do { if (DEBUG_TEST){ fprintf(stderr, ##__VA_ARGS__); fflush(stderr); } } while (0)
 
+#define DEBUG_PRINTERR(...) \
+            do { if (DEBUG_ERROR){ fprintf(stderr, ##__VA_ARGS__); fflush(stderr); } } while (0)
+    
 
 #ifdef	__cplusplus
 }

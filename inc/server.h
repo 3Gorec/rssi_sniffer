@@ -12,6 +12,12 @@
 extern "C" {
 #endif
 
+struct ServerInfo{
+    char *interface;
+    char *port;
+};
+    
+    
 void *server_thread(void *vptr_args);
 
 
