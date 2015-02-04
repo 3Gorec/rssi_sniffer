@@ -14,13 +14,13 @@
 #include "pthread.h"
 #include "sniffer.pb.h"
 #include "debug.h"
-#include "byteorder.h"
+//#include "byteorder.h"
 
 #define BUF_SIZE    1024
 
 //--------------PROTOTYPES----------
 
-static SnifferResponse * ProcessQuery(SnifferQuery *query);
+static void ProcessQuery(SnifferQuery *query, SnifferResponse *response);
 
 static int ServerInit(ServerInfo *serv_info);
 
@@ -34,6 +34,11 @@ static int ReceiveData(int socket, void *buf,int len);
 /*!Receive message from socket data len, then buffer.
  * return data_size, -1 - error*/
 static int32_t ReceiveMsg(int socket, void *buffer, int buffer_size);
+
+/*!return 0-success; -1-error*/
+static int SendData(int socket, void *buf,int len);
+
+static int SendMsg(int socket, void *buffer, int buffer_size);
 //--------------CODE----------------
 
 void *server_thread(void *vptr_args){         
@@ -143,10 +148,10 @@ int ServerInit(ServerInfo *serv_info){
 //---------------------
 
 void ServiceClient(int client_sock){
-    SnifferQuery query;
-    SnifferResponse *response;
+    SnifferQuery query;    
     int32_t data_size=0;
     char buffer[BUF_SIZE];    
+    SnifferResponse response;
     std::string input_msg_str;    
     input_msg_str.clear();
     
@@ -166,16 +171,20 @@ void ServiceClient(int client_sock){
     
     
     
-    response=ProcessQuery(&query);
-    response->SerializeToArray((void*)buffer,data_size);
-    
+    ProcessQuery(&query,&response);
+    data_size=response.ByteSize();
+    response.SerializeToArray((void*)buffer,data_size);
+    DEBUG_PRINT("response:\n"
+            "\tData size=: %d\n"
+            "\tMessage: %s\n",data_size,response.DebugString().data());        
+    if(SendMsg(client_sock,buffer,data_size)==-1){
+        return;
+    }
 }
 
 //---------------------
 
-SnifferResponse * ProcessQuery(SnifferQuery *query){
-    SnifferResponse *response=new SnifferResponse;    
-    
+void ProcessQuery(SnifferQuery *query, SnifferResponse *response){    
     switch(query->type()){
         case START_SNIFFING:
             response->set_type(QUERY_OK);
@@ -189,8 +198,7 @@ SnifferResponse * ProcessQuery(SnifferQuery *query){
         default:
             response->set_type(QUERY_ERROR);
             break;
-    }
-    return response;
+    }    
 }
 
 //---------------------
@@ -200,11 +208,11 @@ int ReceiveData(int socket, void *buf,int len){
     while(total_recvd<len){
         recvd=recv(socket,(void *)((char *)buf+total_recvd),len-total_recvd,0);
         if(recvd==0){
-            DEBUG_PRINTERR("Receive error: connection closed\n");
+            DEBUG_PRINTERR("Receiving error: connection closed\n");
             return -1;
         }
         if(recvd==-1){
-            DEBUG_PRINTERR("Receive error: %i\n",errno);
+            DEBUG_PRINTERR("Receiving error: %i\n",errno);
             return -1;
         }
         total_recvd+=recvd;
@@ -234,3 +242,34 @@ int32_t ReceiveMsg(int socket, void *buffer, int buffer_size){
     
     return data_size;
 }
+
+//---------------------
+
+int SendData(int socket, void *buf,int len){
+    int sent=0, total_sent=0;
+    while(total_sent<len){
+        sent=send(socket,(void *)((char*)buf+total_sent),len-total_sent,0);
+        if(sent==-1){
+            DEBUG_PRINTERR("Sending error: %i\n",errno);
+            return -1;
+        }
+        total_sent+=sent;
+    }
+}
+
+//---------------------
+
+int SendMsg(int socket, void *buffer, int buffer_size){
+    uint32_t size_to_send=htonl((uint32_t)buffer_size);
+    if(SendData(socket,(void*)&(size_to_send),sizeof(size_to_send))==-1){
+        close(socket);
+        return -1;
+    }
+    if(SendData(socket,buffer,buffer_size)==-1){
+        close(socket);
+        return -1;
+    }
+    return 0;
+}
+
+//---------------------
