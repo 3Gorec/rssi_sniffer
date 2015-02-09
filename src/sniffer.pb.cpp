@@ -43,8 +43,9 @@ void protobuf_AssignDesc_sniffer_2eproto() {
       "sniffer.proto");
   GOOGLE_CHECK(file != NULL);
   SnifferQuery_descriptor_ = file->message_type(0);
-  static const int SnifferQuery_offsets_[1] = {
+  static const int SnifferQuery_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferQuery, type_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferQuery, accum_period_),
   };
   SnifferQuery_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -151,19 +152,19 @@ void protobuf_AddDesc_sniffer_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\rsniffer.proto\"6\n\014SnifferQuery\022&\n\004type\030"
-    "\001 \002(\0162\n.QueryType:\014DATA_REQUEST\"\367\001\n\017Snif"
-    "ferResponse\022*\n\004type\030\001 \002(\0162\r.ResponseType"
-    ":\rDATA_RESPONSE\022\r\n\005valid\030\002 \001(\010\022$\n\002ts\030\003 \001"
-    "(\0132\030.SnifferResponse.Timeval\022.\n\trssi_dat"
-    "a\030\004 \003(\0132\033.SnifferResponse.RSSIRecord\032*\n\007"
-    "Timeval\022\016\n\006tv_sec\030\001 \001(\003\022\017\n\007tv_usec\030\002 \001(\003"
-    "\032\'\n\nRSSIRecord\022\013\n\003mac\030\001 \001(\014\022\014\n\004rssi\030\002 \001("
-    "\005*D\n\tQueryType\022\022\n\016START_SNIFFING\020\000\022\021\n\rST"
-    "OP_SNIFFING\020\001\022\020\n\014DATA_REQUEST\020\002*@\n\014Respo"
-    "nseType\022\021\n\rDATA_RESPONSE\020\000\022\014\n\010QUERY_OK\020\001"
-    "\022\017\n\013QUERY_ERROR\020\002B\030\n\014sniffer_protB\010prot_"
-    "buf", 483);
+    "\n\rsniffer.proto\"O\n\014SnifferQuery\022&\n\004type\030"
+    "\001 \002(\0162\n.QueryType:\014DATA_REQUEST\022\027\n\014accum"
+    "_period\030\002 \001(\005:\0011\"\367\001\n\017SnifferResponse\022*\n\004"
+    "type\030\001 \002(\0162\r.ResponseType:\rDATA_RESPONSE"
+    "\022\r\n\005valid\030\002 \001(\010\022$\n\002ts\030\003 \001(\0132\030.SnifferRes"
+    "ponse.Timeval\022.\n\trssi_data\030\004 \003(\0132\033.Sniff"
+    "erResponse.RSSIRecord\032*\n\007Timeval\022\016\n\006tv_s"
+    "ec\030\001 \001(\003\022\017\n\007tv_usec\030\002 \001(\003\032\'\n\nRSSIRecord\022"
+    "\013\n\003mac\030\001 \001(\014\022\014\n\004rssi\030\002 \001(\005*D\n\tQueryType\022"
+    "\022\n\016START_SNIFFING\020\000\022\021\n\rSTOP_SNIFFING\020\001\022\020"
+    "\n\014DATA_REQUEST\020\002*@\n\014ResponseType\022\021\n\rDATA"
+    "_RESPONSE\020\000\022\014\n\010QUERY_OK\020\001\022\017\n\013QUERY_ERROR"
+    "\020\002B\030\n\014sniffer_protB\010prot_buf", 508);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "sniffer.proto", &protobuf_RegisterTypes);
   SnifferQuery::default_instance_ = new SnifferQuery();
@@ -218,6 +219,7 @@ bool ResponseType_IsValid(int value) {
 
 #ifndef _MSC_VER
 const int SnifferQuery::kTypeFieldNumber;
+const int SnifferQuery::kAccumPeriodFieldNumber;
 #endif  // !_MSC_VER
 
 SnifferQuery::SnifferQuery()
@@ -239,6 +241,7 @@ SnifferQuery::SnifferQuery(const SnifferQuery& from)
 void SnifferQuery::SharedCtor() {
   _cached_size_ = 0;
   type_ = 2;
+  accum_period_ = 1;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -274,7 +277,10 @@ SnifferQuery* SnifferQuery::New() const {
 }
 
 void SnifferQuery::Clear() {
-  type_ = 2;
+  if (_has_bits_[0 / 32] & 3) {
+    type_ = 2;
+    accum_period_ = 1;
+  }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
 }
@@ -301,6 +307,21 @@ bool SnifferQuery::MergePartialFromCodedStream(
           } else {
             mutable_unknown_fields()->AddVarint(1, value);
           }
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_accum_period;
+        break;
+      }
+
+      // optional int32 accum_period = 2 [default = 1];
+      case 2: {
+        if (tag == 16) {
+         parse_accum_period:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &accum_period_)));
+          set_has_accum_period();
         } else {
           goto handle_unusual;
         }
@@ -339,6 +360,11 @@ void SnifferQuery::SerializeWithCachedSizes(
       1, this->type(), output);
   }
 
+  // optional int32 accum_period = 2 [default = 1];
+  if (has_accum_period()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->accum_period(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -353,6 +379,11 @@ void SnifferQuery::SerializeWithCachedSizes(
   if (has_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       1, this->type(), target);
+  }
+
+  // optional int32 accum_period = 2 [default = 1];
+  if (has_accum_period()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->accum_period(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -371,6 +402,13 @@ int SnifferQuery::ByteSize() const {
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+    }
+
+    // optional int32 accum_period = 2 [default = 1];
+    if (has_accum_period()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->accum_period());
     }
 
   }
@@ -403,6 +441,9 @@ void SnifferQuery::MergeFrom(const SnifferQuery& from) {
     if (from.has_type()) {
       set_type(from.type());
     }
+    if (from.has_accum_period()) {
+      set_accum_period(from.accum_period());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -428,6 +469,7 @@ bool SnifferQuery::IsInitialized() const {
 void SnifferQuery::Swap(SnifferQuery* other) {
   if (other != this) {
     std::swap(type_, other->type_);
+    std::swap(accum_period_, other->accum_period_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

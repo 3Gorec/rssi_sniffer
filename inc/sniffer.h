@@ -13,12 +13,15 @@ extern "C" {
 #endif
 
 #include <pcap/pcap.h>
-  
-    
-    pcap_t * SnifferInit(char *dev);
-    int SnifferClose(pcap_t *handle);
-    int SnifferStart(pcap_t *handle);
-    int SnifferStop(pcap_t * handle);
+
+/*!Установка интерфейса для сниффинга dev - имя интерфейса*/    
+void SetDevice(char *dev);
+
+/*!Открытие устройства запуск снифинга*/
+int SnifferStart(int capture_period);
+
+/*!Закрытие устройства остановка снифинга*/
+int SnifferStop();
 
 #ifdef	__cplusplus
 }

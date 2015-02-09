@@ -139,16 +139,26 @@ class SnifferQuery : public ::google::protobuf::Message {
   inline ::QueryType type() const;
   inline void set_type(::QueryType value);
 
+  // optional int32 accum_period = 2 [default = 1];
+  inline bool has_accum_period() const;
+  inline void clear_accum_period();
+  static const int kAccumPeriodFieldNumber = 2;
+  inline ::google::protobuf::int32 accum_period() const;
+  inline void set_accum_period(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:SnifferQuery)
  private:
   inline void set_has_type();
   inline void clear_has_type();
+  inline void set_has_accum_period();
+  inline void clear_has_accum_period();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   int type_;
+  ::google::protobuf::int32 accum_period_;
   friend void  protobuf_AddDesc_sniffer_2eproto();
   friend void protobuf_AssignDesc_sniffer_2eproto();
   friend void protobuf_ShutdownFile_sniffer_2eproto();
@@ -486,6 +496,30 @@ inline void SnifferQuery::set_type(::QueryType value) {
   set_has_type();
   type_ = value;
   // @@protoc_insertion_point(field_set:SnifferQuery.type)
+}
+
+// optional int32 accum_period = 2 [default = 1];
+inline bool SnifferQuery::has_accum_period() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SnifferQuery::set_has_accum_period() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SnifferQuery::clear_has_accum_period() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SnifferQuery::clear_accum_period() {
+  accum_period_ = 1;
+  clear_has_accum_period();
+}
+inline ::google::protobuf::int32 SnifferQuery::accum_period() const {
+  // @@protoc_insertion_point(field_get:SnifferQuery.accum_period)
+  return accum_period_;
+}
+inline void SnifferQuery::set_accum_period(::google::protobuf::int32 value) {
+  set_has_accum_period();
+  accum_period_ = value;
+  // @@protoc_insertion_point(field_set:SnifferQuery.accum_period)
 }
 
 // -------------------------------------------------------------------

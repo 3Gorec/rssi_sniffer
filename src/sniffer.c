@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sniffer.h"
 #include "radiotap-parser.h"
 #include "debug.h"
@@ -12,6 +13,8 @@
 //----------------DEFINES-----------------------
 
 #define MAX_RSSI_RECORDS_PER_INTERVAL   1000   
+#define MAX_CAPTURE_PERIOD              10
+#define MIN_CAPTURE_PERIOD              1
 
 //----------------TYPES-------------------------
 
@@ -44,8 +47,17 @@ static sCapturedDataSet data_set_1={.valid=0,.ts={0,0},.records_count=0};;
 static sCapturedDataSet *ready_ds=0;
 static sCapturedDataSet *process_ds=&data_set_0;
 
+static pcap_t * handle=0;
+char device[255]="";
+
 //----------------PROTOTYPES--------------------
 
+/*!Устанавливает период наакопления данных
+ * capture_period - длина периода в секундах*/
+static int SetPeriod(int capture_period);
+
+/*!Открытие устройства, проверка возможности включения в monitor mode*/
+static pcap_t* SnifferInit();
 
 /*!Колбек для обработки пакектов, вытаскивает из них RSSI  и MAC если возможно*/
 static void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -76,51 +88,45 @@ static void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts);
 
 //----------------CODE--------------------------
 
+void SetDevice(char *dev){    
+    strcpy(device,dev);
+    DEBUG_PRINT("Device %s has been setted\n",device);
+}
 
+//----------------------------------
 
-pcap_t * SnifferInit(char *dev){    
-    char errbuf[PCAP_ERRBUF_SIZE*10];    
-    int header_type;    
-    int status=0;
-    pcap_t *handle=0;
+static int SetPeriod(int capture_period){
+    if(capture_period<MIN_CAPTURE_PERIOD || capture_period>MAX_CAPTURE_PERIOD){
+        return -1;
+    }
+    capture_inerval_s=capture_period;
+    return 0;
+}
+
+//----------------------------------
+
+static pcap_t* SnifferInit(){    
+    char errbuf[PCAP_ERRBUF_SIZE*10];            
+    handle=0;    
+    if(device[0]==0){
+        DEBUG_PRINTERR("Error: device didn't setted\n");
+        return 0;
+    }
     
-    handle=pcap_create(dev,errbuf); //Открываем устройство
+    handle=pcap_create(device,errbuf); //Открываем устройство
     if (handle == NULL) {
-            DEBUG_PRINT("Couldn't open device %s: %s\n",dev,errbuf);
-            return 0;
+        DEBUG_PRINTERR("Couldn't open device %s: %s\n",device,errbuf);
+        return 0;
     }
     else{
-        DEBUG_PRINT("Opened device %s\n",dev);
+        DEBUG_PRINT("Opened device %s\n",device);
     }
     
     if(pcap_can_set_rfmon(handle)){     //Проверка на возможность включени monitor мода
-        DEBUG_PRINT("Device %s can be opened in monitor mode\n",dev);
+        DEBUG_PRINT("Device %s can be opened in monitor mode\n",device);
     }
     else{
-        DEBUG_PRINT("Device %s can't be opened in monitor mode!!!\n",dev);
-    }
-    
-    pcap_set_rfmon(handle,0);   //Включение monitor mode
-    if(pcap_set_rfmon(handle,1)!=0){
-        DEBUG_PRINT("Device %s couldn't be opened in monitor mode\n", dev);
-        return 0;
-    }
-    else{
-        DEBUG_PRINT("Device %s has been opened in monitor mode\n", dev);
-    }
-    pcap_set_promisc(handle,0);
-    pcap_set_snaplen(handle,BUFSIZ);
-    
-    status=pcap_activate(handle);   //Активация и проверка статуса
-    if(status!=0){
-        pcap_perror(handle,(char*)"pcap error: ");
-        return 0;
-    }
-    
-    header_type=pcap_datalink(handle);  //Провекрка типа заголовков
-    if(header_type!=DLT_IEEE802_11_RADIO){
-        DEBUG_PRINT("Error: incorrect header type - %d",header_type);
-        return 0;            
+        DEBUG_PRINTERR("Device %s can't be opened in monitor mode\n",device);
     }
     
     return handle;
@@ -128,33 +134,68 @@ pcap_t * SnifferInit(char *dev){
 
 //----------------------------------
 
-int SnifferStart(pcap_t * handle){
-    pcap_loop(handle,100,PacketProcess,NULL);    
+int SnifferStart(int capture_period){
+    int header_type;    
+    int status=0;    
+    
+    if(SetPeriod(capture_period)!=0){
+        DEBUG_PRINTERR("Error, wrong accumulation period\n");
+        return -1;
+    }
+    
+    handle=SnifferInit();    
+    if(handle==0){
+        DEBUG_PRINTERR("Error, while opening device %s\n",device);
+        exit(EXIT_FAILURE);
+    }
+    
+    pcap_set_rfmon(handle,0);   //Выключение monitor mode, если он был включен
+    if(pcap_set_rfmon(handle,1)!=0){
+        DEBUG_PRINTERR("Error opening in monitor mode\n");
+        return -1;
+    }
+    else{
+        DEBUG_PRINT("Device has been opened in monitor mode\n");
+    }
+    pcap_set_promisc(handle,0);
+    pcap_set_snaplen(handle,BUFSIZ);
+    
+    status=pcap_activate(handle);   //Активация и проверка статуса
+    if(status!=0){
+        pcap_perror(handle,(char*)"pcap error: ");
+        return -1;
+    }
+    
+    header_type=pcap_datalink(handle);  //Провекрка типа заголовков
+    if(header_type!=DLT_IEEE802_11_RADIO){
+        DEBUG_PRINTERR("Error: incorrect header type - %d",header_type);
+        return -1;       
+    }
+    
+    pcap_loop(handle,10,PacketProcess,NULL);  //todo переделать  
     return 0;
 }
 
 //----------------------------------
 
-int SnifferStop(pcap_t * handle){
-    return 0;
-}
-
-//----------------------------------
-
-int SnifferClose(pcap_t * handle){
-     /* Сlose the session */      
-    pcap_close(handle);
+int SnifferStop(){
+    if(handle==0){
+        DEBUG_PRINTERR("Error: device didn't opened");
+        return -1;       
+    }
     pcap_set_rfmon(handle,0);
+    /* Сlose the session */      
+    pcap_close(handle);
+    capture_packet_counter=0;
+    handle=0;
     return 0;
 }
 
 //----------------------------------
 
 void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
-    int status=0;
-    //int8_t rssi=0;    
-    uint16_t rt_header_len;
-    //uint8_t src_mac[6];
+    int status=0;    
+    uint16_t rt_header_len;    
     sCapturedRSSI rssi_data;
     
     ++capture_packet_counter;
