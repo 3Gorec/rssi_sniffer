@@ -11,6 +11,7 @@
 #include <linux/if_link.h>
 #include <errno.h>
 #include "server.h"
+#include "sniffer.h"
 #include "pthread.h"
 #include "sniffer.pb.h"
 #include "debug.h"
@@ -185,12 +186,25 @@ void ServiceClient(int client_sock){
 //---------------------
 
 void ProcessQuery(SnifferQuery *query, SnifferResponse *response){    
+    int status=0;
     switch(query->type()){
         case START_SNIFFING:
-            response->set_type(QUERY_OK);
+            status=SnifferStart(query->accum_period());
+            if(status==0){
+                response->set_type(QUERY_OK);
+            }
+            else{
+                response->set_type(QUERY_ERROR);
+            }
             break;
         case STOP_SNIFFING:
-            response->set_type(QUERY_OK);
+            status=SnifferStop();
+            if(status==0){
+                response->set_type(QUERY_OK);
+            }
+            else{
+                response->set_type(QUERY_ERROR);
+            }
             break;
         case DATA_REQUEST:
             response->set_type(DATA_RESPONSE);

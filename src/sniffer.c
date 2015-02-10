@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <semaphore.h>
+#include <errno.h>
 #include "sniffer.h"
 #include "radiotap-parser.h"
 #include "debug.h"
@@ -50,6 +52,9 @@ static sCapturedDataSet *process_ds=&data_set_0;
 static pcap_t * handle=0;
 char device[255]="";
 
+sem_t pcap_loop_sem;
+char pcap_sem_init=0;
+
 //----------------PROTOTYPES--------------------
 
 /*!Устанавливает период наакопления данных
@@ -87,6 +92,18 @@ static void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts);
 
 
 //----------------CODE--------------------------
+
+void InitSnifferThread(){
+    if(!pcap_sem_init){
+        if(sem_init(&pcap_loop_sem, 0, 0)!=0){
+            DEBUG_PRINTERR("Semaphore init error: %d\n",errno);
+            return -1;
+        }
+        pcap_sem_init=1;
+    }  
+}
+
+//----------------------------------
 
 void SetDevice(char *dev){    
     strcpy(device,dev);
@@ -172,7 +189,15 @@ int SnifferStart(int capture_period){
         return -1;       
     }
     
-    pcap_loop(handle,10,PacketProcess,NULL);  //todo переделать  
+    if(!pcap_sem_init){
+        DEBUG_PRINTERR("Error: sniffer thread has not been initialized\n");
+        return -1;
+    }    
+    if(sem_post(&pcap_loop_sem)!=0){
+        DEBUG_PRINTERR("Semaphore post error: %d\n",errno);
+        return -1;
+    }
+    
     return 0;
 }
 
@@ -180,7 +205,7 @@ int SnifferStart(int capture_period){
 
 int SnifferStop(){
     if(handle==0){
-        DEBUG_PRINTERR("Error: device didn't opened");
+        DEBUG_PRINTERR("Error: device didn't opened\n");
         return -1;       
     }
     pcap_set_rfmon(handle,0);
@@ -188,6 +213,29 @@ int SnifferStop(){
     pcap_close(handle);
     capture_packet_counter=0;
     handle=0;
+    return 0;
+}
+
+//----------------------------------
+
+int SnifferLoop(){
+    int status;
+    if(!pcap_sem_init){
+        DEBUG_PRINTERR("Error: sempahore has not been created\n");
+        exit(EXIT_FAILURE);
+    }
+    while(1){        
+        if(sem_wait(&pcap_loop_sem)!=0){
+            DEBUG_PRINTERR("Semaphore wait error: %d\n",errno);
+            continue;
+        }
+        DEBUG_PRINT("Sniffer loop started\n");
+        status=pcap_loop(handle,-1,PacketProcess,NULL);
+        if(status==-2){
+            pcap_perror(handle,(char*)"pcap error: ");
+            continue;
+        }        
+    }
     return 0;
 }
 
@@ -384,3 +432,4 @@ void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
 }
 
 //----------------------------------
+

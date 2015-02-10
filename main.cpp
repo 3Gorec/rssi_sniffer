@@ -32,13 +32,10 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
     
-    SnifferStart(1);       
-    SnifferStop();         
-    SnifferStart(1);       
-    SnifferStop();             
+    InitSnifferThread();
+    SnifferLoop();
     
     
-    //while(1);
     exit(0);
 }
 
