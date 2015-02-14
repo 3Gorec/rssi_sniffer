@@ -38,12 +38,11 @@ class SnifferResponse_Timeval;
 class SnifferResponse_RSSIRecord;
 
 enum QueryType {
-  START_SNIFFING = 0,
-  STOP_SNIFFING = 1,
-  DATA_REQUEST = 2
+  STATUS_REQUEST = 0,
+  DATA_REQUEST = 1
 };
 bool QueryType_IsValid(int value);
-const QueryType QueryType_MIN = START_SNIFFING;
+const QueryType QueryType_MIN = STATUS_REQUEST;
 const QueryType QueryType_MAX = DATA_REQUEST;
 const int QueryType_ARRAYSIZE = QueryType_MAX + 1;
 
@@ -58,13 +57,12 @@ inline bool QueryType_Parse(
     QueryType_descriptor(), name, value);
 }
 enum ResponseType {
-  DATA_RESPONSE = 0,
-  QUERY_OK = 1,
-  QUERY_ERROR = 2
+  DATA = 0,
+  STATUS = 1
 };
 bool ResponseType_IsValid(int value);
-const ResponseType ResponseType_MIN = DATA_RESPONSE;
-const ResponseType ResponseType_MAX = QUERY_ERROR;
+const ResponseType ResponseType_MIN = DATA;
+const ResponseType ResponseType_MAX = STATUS;
 const int ResponseType_ARRAYSIZE = ResponseType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ResponseType_descriptor();
@@ -76,6 +74,25 @@ inline bool ResponseType_Parse(
     const ::std::string& name, ResponseType* value) {
   return ::google::protobuf::internal::ParseNamedEnum<ResponseType>(
     ResponseType_descriptor(), name, value);
+}
+enum SnifferStatus {
+  SNIFFING_STOPED = 0,
+  SNIFFING_RUN = 1
+};
+bool SnifferStatus_IsValid(int value);
+const SnifferStatus SnifferStatus_MIN = SNIFFING_STOPED;
+const SnifferStatus SnifferStatus_MAX = SNIFFING_RUN;
+const int SnifferStatus_ARRAYSIZE = SnifferStatus_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* SnifferStatus_descriptor();
+inline const ::std::string& SnifferStatus_Name(SnifferStatus value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    SnifferStatus_descriptor(), value);
+}
+inline bool SnifferStatus_Parse(
+    const ::std::string& name, SnifferStatus* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SnifferStatus>(
+    SnifferStatus_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -139,26 +156,16 @@ class SnifferQuery : public ::google::protobuf::Message {
   inline ::QueryType type() const;
   inline void set_type(::QueryType value);
 
-  // optional int32 accum_period = 2 [default = 1];
-  inline bool has_accum_period() const;
-  inline void clear_accum_period();
-  static const int kAccumPeriodFieldNumber = 2;
-  inline ::google::protobuf::int32 accum_period() const;
-  inline void set_accum_period(::google::protobuf::int32 value);
-
   // @@protoc_insertion_point(class_scope:SnifferQuery)
  private:
   inline void set_has_type();
   inline void clear_has_type();
-  inline void set_has_accum_period();
-  inline void clear_has_accum_period();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   int type_;
-  ::google::protobuf::int32 accum_period_;
   friend void  protobuf_AddDesc_sniffer_2eproto();
   friend void protobuf_AssignDesc_sniffer_2eproto();
   friend void protobuf_ShutdownFile_sniffer_2eproto();
@@ -407,7 +414,7 @@ class SnifferResponse : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required .ResponseType type = 1 [default = DATA_RESPONSE];
+  // required .ResponseType type = 1 [default = DATA];
   inline bool has_type() const;
   inline void clear_type();
   static const int kTypeFieldNumber = 1;
@@ -442,6 +449,20 @@ class SnifferResponse : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::SnifferResponse_RSSIRecord >*
       mutable_rssi_data();
 
+  // optional .SnifferStatus status = 5;
+  inline bool has_status() const;
+  inline void clear_status();
+  static const int kStatusFieldNumber = 5;
+  inline ::SnifferStatus status() const;
+  inline void set_status(::SnifferStatus value);
+
+  // optional int32 accum_period = 6;
+  inline bool has_accum_period() const;
+  inline void clear_accum_period();
+  static const int kAccumPeriodFieldNumber = 6;
+  inline ::google::protobuf::int32 accum_period() const;
+  inline void set_accum_period(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:SnifferResponse)
  private:
   inline void set_has_type();
@@ -450,6 +471,10 @@ class SnifferResponse : public ::google::protobuf::Message {
   inline void clear_has_valid();
   inline void set_has_ts();
   inline void clear_has_ts();
+  inline void set_has_status();
+  inline void clear_has_status();
+  inline void set_has_accum_period();
+  inline void clear_has_accum_period();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -459,6 +484,8 @@ class SnifferResponse : public ::google::protobuf::Message {
   bool valid_;
   ::SnifferResponse_Timeval* ts_;
   ::google::protobuf::RepeatedPtrField< ::SnifferResponse_RSSIRecord > rssi_data_;
+  int status_;
+  ::google::protobuf::int32 accum_period_;
   friend void  protobuf_AddDesc_sniffer_2eproto();
   friend void protobuf_AssignDesc_sniffer_2eproto();
   friend void protobuf_ShutdownFile_sniffer_2eproto();
@@ -484,7 +511,7 @@ inline void SnifferQuery::clear_has_type() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void SnifferQuery::clear_type() {
-  type_ = 2;
+  type_ = 1;
   clear_has_type();
 }
 inline ::QueryType SnifferQuery::type() const {
@@ -496,30 +523,6 @@ inline void SnifferQuery::set_type(::QueryType value) {
   set_has_type();
   type_ = value;
   // @@protoc_insertion_point(field_set:SnifferQuery.type)
-}
-
-// optional int32 accum_period = 2 [default = 1];
-inline bool SnifferQuery::has_accum_period() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SnifferQuery::set_has_accum_period() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SnifferQuery::clear_has_accum_period() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SnifferQuery::clear_accum_period() {
-  accum_period_ = 1;
-  clear_has_accum_period();
-}
-inline ::google::protobuf::int32 SnifferQuery::accum_period() const {
-  // @@protoc_insertion_point(field_get:SnifferQuery.accum_period)
-  return accum_period_;
-}
-inline void SnifferQuery::set_accum_period(::google::protobuf::int32 value) {
-  set_has_accum_period();
-  accum_period_ = value;
-  // @@protoc_insertion_point(field_set:SnifferQuery.accum_period)
 }
 
 // -------------------------------------------------------------------
@@ -682,7 +685,7 @@ inline void SnifferResponse_RSSIRecord::set_rssi(::google::protobuf::int32 value
 
 // SnifferResponse
 
-// required .ResponseType type = 1 [default = DATA_RESPONSE];
+// required .ResponseType type = 1 [default = DATA];
 inline bool SnifferResponse::has_type() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -802,6 +805,55 @@ SnifferResponse::mutable_rssi_data() {
   return &rssi_data_;
 }
 
+// optional .SnifferStatus status = 5;
+inline bool SnifferResponse::has_status() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void SnifferResponse::set_has_status() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void SnifferResponse::clear_has_status() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void SnifferResponse::clear_status() {
+  status_ = 0;
+  clear_has_status();
+}
+inline ::SnifferStatus SnifferResponse::status() const {
+  // @@protoc_insertion_point(field_get:SnifferResponse.status)
+  return static_cast< ::SnifferStatus >(status_);
+}
+inline void SnifferResponse::set_status(::SnifferStatus value) {
+  assert(::SnifferStatus_IsValid(value));
+  set_has_status();
+  status_ = value;
+  // @@protoc_insertion_point(field_set:SnifferResponse.status)
+}
+
+// optional int32 accum_period = 6;
+inline bool SnifferResponse::has_accum_period() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void SnifferResponse::set_has_accum_period() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void SnifferResponse::clear_has_accum_period() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void SnifferResponse::clear_accum_period() {
+  accum_period_ = 0;
+  clear_has_accum_period();
+}
+inline ::google::protobuf::int32 SnifferResponse::accum_period() const {
+  // @@protoc_insertion_point(field_get:SnifferResponse.accum_period)
+  return accum_period_;
+}
+inline void SnifferResponse::set_accum_period(::google::protobuf::int32 value) {
+  set_has_accum_period();
+  accum_period_ = value;
+  // @@protoc_insertion_point(field_set:SnifferResponse.accum_period)
+}
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -818,6 +870,11 @@ template <> struct is_proto_enum< ::ResponseType> : ::google::protobuf::internal
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::ResponseType>() {
   return ::ResponseType_descriptor();
+}
+template <> struct is_proto_enum< ::SnifferStatus> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::SnifferStatus>() {
+  return ::SnifferStatus_descriptor();
 }
 
 }  // namespace google

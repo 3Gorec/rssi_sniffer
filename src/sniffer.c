@@ -35,12 +35,11 @@ typedef struct{
    sCapturedRSSI rssi_data[MAX_RSSI_RECORDS_PER_INTERVAL];  
 }sCapturedDataSet;  //todo возможно стоит добавить выравнивание
 
-
 //----------------GLOBAL VARS-------------------
 
 static int capture_inerval_s=1;
 
-static int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
+static unsigned int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
 
 static struct timeval cur_ts={0,0};
 
@@ -52,8 +51,7 @@ static sCapturedDataSet *process_ds=&data_set_0;
 static pcap_t * handle=0;
 char device[255]="";
 
-sem_t pcap_loop_sem;
-char pcap_sem_init=0;
+tSnifferStatus sniffer_status=sns_stoped;
 
 //----------------PROTOTYPES--------------------
 
@@ -93,18 +91,6 @@ static void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts);
 
 //----------------CODE--------------------------
 
-void InitSnifferThread(){
-    if(!pcap_sem_init){
-        if(sem_init(&pcap_loop_sem, 0, 0)!=0){
-            DEBUG_PRINTERR("Semaphore init error: %d\n",errno);
-            return -1;
-        }
-        pcap_sem_init=1;
-    }  
-}
-
-//----------------------------------
-
 void SetDevice(char *dev){    
     strcpy(device,dev);
     DEBUG_PRINT("Device %s has been setted\n",device);
@@ -124,7 +110,12 @@ static int SetPeriod(int capture_period){
 
 static pcap_t* SnifferInit(){    
     char errbuf[PCAP_ERRBUF_SIZE*10];            
-    handle=0;    
+    handle=0;
+    if(sniffer_status==sns_run){
+        DEBUG_PRINTERR("Error: already running\n");
+        return 0;
+    }
+    
     if(device[0]==0){
         DEBUG_PRINTERR("Error: device didn't setted\n");
         return 0;
@@ -189,29 +180,20 @@ int SnifferStart(int capture_period){
         return -1;       
     }
     
-    if(!pcap_sem_init){
-        DEBUG_PRINTERR("Error: sniffer thread has not been initialized\n");
-        return -1;
-    }    
-    if(sem_post(&pcap_loop_sem)!=0){
-        DEBUG_PRINTERR("Semaphore post error: %d\n",errno);
-        return -1;
-    }
-    
     return 0;
 }
 
 //----------------------------------
 
-int SnifferStop(){
+int SnifferStop(){    
     if(handle==0){
         DEBUG_PRINTERR("Error: device didn't opened\n");
         return -1;       
-    }
+    }    
     pcap_set_rfmon(handle,0);
     /* Сlose the session */      
     pcap_close(handle);
-    capture_packet_counter=0;
+    capture_packet_counter=0;    
     handle=0;
     return 0;
 }
@@ -220,21 +202,12 @@ int SnifferStop(){
 
 int SnifferLoop(){
     int status;
-    if(!pcap_sem_init){
-        DEBUG_PRINTERR("Error: sempahore has not been created\n");
-        exit(EXIT_FAILURE);
-    }
-    while(1){        
-        if(sem_wait(&pcap_loop_sem)!=0){
-            DEBUG_PRINTERR("Semaphore wait error: %d\n",errno);
-            continue;
-        }
-        DEBUG_PRINT("Sniffer loop started\n");
-        status=pcap_loop(handle,-1,PacketProcess,NULL);
-        if(status==-2){
-            pcap_perror(handle,(char*)"pcap error: ");
-            continue;
-        }        
+    DEBUG_PRINT("Sniffer loop started\n");
+    sniffer_status=sns_run;
+    status=pcap_loop(handle,-1,PacketProcess,NULL);
+    sniffer_status=sns_stoped;
+    if(status==-2){
+        pcap_perror(handle,(char*)"pcap error: ");        
     }
     return 0;
 }
@@ -433,3 +406,6 @@ void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
 
 //----------------------------------
 
+int GetPeriod(){
+    return capture_inerval_s;
+}

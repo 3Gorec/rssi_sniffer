@@ -18,23 +18,26 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
+    int interval=2; //todo считать из аргументов
     char *dev;
     char *default_dev=(char *)"wlan0";  /*default interface*/             
-    ServerInfo serv_info={(char *)"lo",(char *)"7987"};
+    ServerInfo serv_info={(char *)"lo",(char *)"7987"}; //todo считать из аргументов
     pthread_t serv_handle;    
     char network_int;
     
-    dev=default_dev;    //todo добавтить возожность кастомизации    
+    dev=default_dev;    //todo считать из аргументов    
     SetDevice(dev);
     
     if(pthread_create(&serv_handle,NULL,server_thread,(void *)&serv_info)){
         DEBUG_PRINTERR("Error thread");
         exit(EXIT_FAILURE);
     }
-    
-    InitSnifferThread();
-    SnifferLoop();
-    
+        
+    if(SnifferStart(interval)!=0){
+        exit(EXIT_FAILURE);
+    }
+    SnifferLoop();    
+    DEBUG_PRINTERR("Sniffer abort");
     
     exit(0);
 }

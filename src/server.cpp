@@ -40,6 +40,8 @@ static int32_t ReceiveMsg(int socket, void *buffer, int buffer_size);
 static int SendData(int socket, void *buf,int len);
 
 static int SendMsg(int socket, void *buffer, int buffer_size);
+
+static void PackData(SnifferResponse *response);
 //--------------CODE----------------
 
 void *server_thread(void *vptr_args){         
@@ -187,30 +189,25 @@ void ServiceClient(int client_sock){
 
 void ProcessQuery(SnifferQuery *query, SnifferResponse *response){    
     int status=0;
-    switch(query->type()){
-        case START_SNIFFING:
-            status=SnifferStart(query->accum_period());
-            if(status==0){
-                response->set_type(QUERY_OK);
-            }
-            else{
-                response->set_type(QUERY_ERROR);
-            }
+    switch(query->type()){                    
+        case STATUS_REQUEST:
+            response->set_type(STATUS);
+            switch(sniffer_status){
+                case sns_run:
+                    response->set_status(SNIFFING_RUN);
+                    response->set_accum_period(GetPeriod());
+                    break;
+                case sns_stoped:
+                    response->set_status(SNIFFING_STOPED);
+                    break;
+                default:
+                    break;
+            }            
             break;
-        case STOP_SNIFFING:
-            status=SnifferStop();
-            if(status==0){
-                response->set_type(QUERY_OK);
-            }
-            else{
-                response->set_type(QUERY_ERROR);
-            }
-            break;
-        case DATA_REQUEST:
-            response->set_type(DATA_RESPONSE);
-            break;
-        default:
-            response->set_type(QUERY_ERROR);
+        case DATA_REQUEST:            
+            response->set_type(DATA);
+            break;        
+        default:            
             break;
     }    
 }
@@ -287,3 +284,7 @@ int SendMsg(int socket, void *buffer, int buffer_size){
 }
 
 //---------------------
+
+static void PackData(SnifferResponse *response){
+    
+}
