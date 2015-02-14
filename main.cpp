@@ -15,7 +15,7 @@
 using namespace std;
 
 
-
+static void CloseSniffer();
 
 int main(int argc, char** argv) {
     int interval=2; //todo считать из аргументов
@@ -36,9 +36,13 @@ int main(int argc, char** argv) {
     if(SnifferStart(interval)!=0){
         exit(EXIT_FAILURE);
     }
+    atexit(&CloseSniffer);
     SnifferLoop();    
     DEBUG_PRINTERR("Sniffer abort");
     
     exit(0);
 }
 
+static void CloseSniffer(){
+    SnifferStop();
+}
