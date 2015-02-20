@@ -6,6 +6,7 @@
 #include <string.h>
 #include <semaphore.h>
 #include <errno.h>
+#include <pthread.h>
 #include "sniffer.h"
 #include "radiotap-parser.h"
 #include "debug.h"
@@ -14,26 +15,11 @@
 
 //----------------DEFINES-----------------------
 
-#define MAX_RSSI_RECORDS_PER_INTERVAL   1000   
 #define MAX_CAPTURE_PERIOD              10
 #define MIN_CAPTURE_PERIOD              1
 
 //----------------TYPES-------------------------
 
-
-typedef struct{    
-    uint8_t mac[6];
-    int8_t rssi;
-}sCapturedRSSI;
-
-/*!Структура предназначена для хранения данных собранных за интервал времени
- * с последующей передачей их по сети*/
-typedef struct{
-   char valid;  //флаг валидность 0 - невалидно !0 - валидно
-   struct timeval ts;   //временная метка
-   int records_count;     
-   sCapturedRSSI rssi_data[MAX_RSSI_RECORDS_PER_INTERVAL];  
-}sCapturedDataSet;  //todo возможно стоит добавить выравнивание
 
 //----------------GLOBAL VARS-------------------
 
@@ -45,11 +31,14 @@ static struct timeval cur_ts={0,0};
 
 static sCapturedDataSet data_set_0={.valid=0,.ts={0,0},.records_count=0};
 static sCapturedDataSet data_set_1={.valid=0,.ts={0,0},.records_count=0};;
-static sCapturedDataSet *ready_ds=0;
+sCapturedDataSet *ready_ds=0;
 static sCapturedDataSet *process_ds=&data_set_0;
 
 static pcap_t * handle=0;
 char device[255]="";
+
+static pthread_mutex_t data_mutex;
+static char mutex_init=0;
 
 tSnifferStatus sniffer_status=sns_stoped;
 
@@ -111,6 +100,12 @@ static int SetPeriod(int capture_period){
 static pcap_t* SnifferInit(){    
     char errbuf[PCAP_ERRBUF_SIZE*10];            
     handle=0;
+    
+    if(!mutex_init){
+        pthread_mutex_init(&data_mutex,NULL);
+        mutex_init=0;
+    }
+    
     if(sniffer_status==sns_run){
         DEBUG_PRINTERR("Error: already running\n");
         return 0;
@@ -164,7 +159,7 @@ int SnifferStart(int capture_period){
     }
     else{
         DEBUG_PRINT("Device has been opened in monitor mode\n");
-    }
+    }    
     pcap_set_promisc(handle,0);
     pcap_set_snaplen(handle,BUFSIZ);
     
@@ -206,7 +201,7 @@ int SnifferLoop(){
     sniffer_status=sns_run;
     status=pcap_loop(handle,-1,PacketProcess,NULL);
     sniffer_status=sns_stoped;
-    if(status==-2){
+    if(status!=-2){
         pcap_perror(handle,(char*)"pcap error: ");        
     }
     return 0;
@@ -379,12 +374,14 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 //----------------------------------
 
 void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
+    int i,j;
     if(cur_ts.tv_sec==0){   //В случае если данная запись - первая с запуска программы
         cur_ts=ts;
         process_ds->ts=ts;
     }
-        
+    DEBUG_PRINT("\tHeader tv_sec=%d\n",ts.tv_sec);    
     if(ts.tv_sec-cur_ts.tv_sec>=capture_inerval_s){   //Начало нового секундного интервала
+        CapturedData_Lock();
         cur_ts=ts;
         process_ds->valid=1;
         ready_ds=process_ds;
@@ -397,10 +394,21 @@ void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
         process_ds->valid=0;
         process_ds->ts=ts;
         process_ds->records_count=0;
+        CapturedData_Unlock();
     }
     if(process_ds->records_count<MAX_RSSI_RECORDS_PER_INTERVAL){    //сохранение данных за текущий интервал
-        process_ds->rssi_data[process_ds->records_count]=*rssi_data;
+        i=process_ds->records_count;
+        process_ds->rssi_data[i].rssi=rssi_data->rssi;
+        for(j=0;j<MAC_LEN;++j){
+            process_ds->rssi_data[i].mac[j]=rssi_data->mac[j];
+        }
         ++process_ds->records_count;
+        if(process_ds==&data_set_0){   
+            DEBUG_PRINT("\tHeader added to bank 0\n");
+        }
+        else{
+            DEBUG_PRINT("\tHeader added to bank 1\n");
+        }
     }
 }
 
@@ -409,3 +417,21 @@ void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
 int GetPeriod(){
     return capture_inerval_s;
 }
+
+//----------------------------------
+
+void CapturedData_Lock(){
+    if(mutex_init){
+        pthread_mutex_lock(&data_mutex);
+    }
+}
+
+//----------------------------------
+
+void CapturedData_Unlock(){
+    if(mutex_init){
+        pthread_mutex_unlock(&data_mutex);
+    }
+}
+
+//----------------------------------

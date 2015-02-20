@@ -17,7 +17,7 @@
 #include "debug.h"
 //#include "byteorder.h"
 
-#define BUF_SIZE    1024
+#define BUF_SIZE    5120
 
 //--------------PROTOTYPES----------
 
@@ -171,11 +171,14 @@ void ServiceClient(int client_sock){
     DEBUG_PRINT("Query:\n"
             "\tData size=: %d\n"
             "\tMessage: %s\n",data_size,query.DebugString().data());        
+            
     
-    
-    
-    ProcessQuery(&query,&response);
-    data_size=response.ByteSize();
+    ProcessQuery(&query,&response); 
+    data_size=response.ByteSize();        
+    if(data_size>BUF_SIZE){
+        DEBUG_PRINTERR("Data size(%d bytes) exceed buffer size(%d bytes)\n",data_size,BUF_SIZE);
+        return;
+    }
     response.SerializeToArray((void*)buffer,data_size);
     DEBUG_PRINT("response:\n"
             "\tData size=: %d\n"
@@ -206,6 +209,7 @@ void ProcessQuery(SnifferQuery *query, SnifferResponse *response){
             break;
         case DATA_REQUEST:            
             response->set_type(DATA);
+            PackData(response);
             break;        
         default:            
             break;
@@ -286,5 +290,23 @@ int SendMsg(int socket, void *buffer, int buffer_size){
 //---------------------
 
 static void PackData(SnifferResponse *response){
-    
+    CapturedData_Lock();    
+    if(ready_ds!=0){
+        SnifferResponse_Timeval *ts;                
+        SnifferResponse_RSSIRecord *record;
+        ts=response->mutable_ts();
+        ts->set_tv_sec(ready_ds->ts.tv_sec);
+        ts->set_tv_usec(ready_ds->ts.tv_usec);        
+        response->set_valid((bool)ready_ds->valid);        
+        DEBUG_PRINT("Pack: record_count=%d\n",ready_ds->records_count);
+        for(int i=0;i<ready_ds->records_count;++i){        
+            record=response->add_rssi_data();
+            record->set_mac((void*)ready_ds->rssi_data[i].mac,MAC_LEN);
+            record->set_rssi(ready_ds->rssi_data[i].rssi);            
+        }
+    }
+    else{
+        response->set_valid(0);
+    }   
+    CapturedData_Unlock();    
 }
