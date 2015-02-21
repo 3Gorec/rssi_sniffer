@@ -15,7 +15,7 @@ extern "C" {
 #include <stdint.h>
 #include <pcap/pcap.h>
 
-#define MAX_RSSI_RECORDS_PER_INTERVAL   1000       
+#define MAX_RSSI_RECORDS_PER_INTERVAL   300       
 #define MAC_LEN                         6
     
 typedef enum{sns_run,sns_stoped}tSnifferStatus;

@@ -27,8 +27,6 @@ static int capture_inerval_s=1;
 
 static unsigned int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
 
-static struct timeval cur_ts={0,0};
-
 static sCapturedDataSet data_set_0={.valid=0,.ts={0,0},.records_count=0};
 static sCapturedDataSet data_set_1={.valid=0,.ts={0,0},.records_count=0};;
 sCapturedDataSet *ready_ds=0;
@@ -375,14 +373,12 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 
 void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
     int i,j;
-    if(cur_ts.tv_sec==0){   //В случае если данная запись - первая с запуска программы
-        cur_ts=ts;
-        process_ds->ts=ts;
+    if(process_ds->ts.tv_sec==0){   //В случае если данная запись - первая с запуска программы
+        process_ds->ts=ts;        
     }
     DEBUG_PRINT("\tHeader tv_sec=%d\n",ts.tv_sec);    
-    if(ts.tv_sec-cur_ts.tv_sec>=capture_inerval_s){   //Начало нового секундного интервала
-        CapturedData_Lock();
-        cur_ts=ts;
+    if(ts.tv_sec-process_ds->ts.tv_sec>=capture_inerval_s){   //Начало нового секундного интервала
+        CapturedData_Lock();        
         process_ds->valid=1;
         ready_ds=process_ds;
         if(process_ds==&data_set_0){   
