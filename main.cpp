@@ -17,19 +17,23 @@ using namespace std;
 
 static void CloseSniffer();
 
-int main(int argc, char** argv) {
-    int interval=2; //todo считать из аргументов
-    char *dev;
-    char *default_dev=(char *)"wlan0";  /*default interface*/             
-    ServerInfo serv_info={(char *)"lo",(char *)"7987"}; //todo считать из аргументов
+int main(int argc, char** argv) {    
+    if(argc!=5){
+        DEBUG_PRINTERR("Invalid arguments\n"
+                "rssi_aggregator [interface to sniffing][accumulating period][interface to connect][port to connect]\n");
+        exit(EXIT_FAILURE);
+    }
+            
+    char *dev=argv[1];  /*default interface*/             
+    int interval=atoi(argv[2]);
+    ServerInfo serv_info={argv[3],argv[4]}; //todo считать из аргументов
     pthread_t serv_handle;    
-    char network_int;
+    char network_int;    
     
-    dev=default_dev;    //todo считать из аргументов    
     SetDevice(dev);
     
     if(pthread_create(&serv_handle,NULL,server_thread,(void *)&serv_info)){
-        DEBUG_PRINTERR("Error thread");
+        DEBUG_PRINTERR("Error thread\n");
         exit(EXIT_FAILURE);
     }
         
@@ -38,7 +42,7 @@ int main(int argc, char** argv) {
     }
     atexit(&CloseSniffer);
     SnifferLoop();    
-    DEBUG_PRINTERR("Sniffer abort");
+    DEBUG_PRINTERR("Sniffer abort\n");
     
     exit(0);
 }
