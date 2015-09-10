@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
                 "rssi_aggregator [interface to sniffing][accumulating period][interface to connect][port to connect]\n");
         exit(EXIT_FAILURE);
     }
-            
+           
+    
     char *dev=argv[1];  /*default interface*/             
     int interval=atoi(argv[2]);
     ServerInfo serv_info={argv[3],argv[4]}; //todo считать из аргументов

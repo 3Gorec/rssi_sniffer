@@ -96,7 +96,8 @@ static int SetPeriod(int capture_period){
 //----------------------------------
 
 static pcap_t* SnifferInit(){    
-    char errbuf[PCAP_ERRBUF_SIZE*10];            
+    char errbuf[PCAP_ERRBUF_SIZE*10];   
+    int status=0;
     handle=0;
     
     if(!mutex_init){
@@ -123,11 +124,12 @@ static pcap_t* SnifferInit(){
         DEBUG_PRINT("Opened device %s\n",device);
     }
     
-    if(pcap_can_set_rfmon(handle)){     //Проверка на возможность включени monitor мода
+    status=pcap_can_set_rfmon(handle);
+    if(status!=1){     //Проверка на возможность включени monitor мода        
         DEBUG_PRINT("Device %s can be opened in monitor mode\n",device);
     }
     else{
-        DEBUG_PRINTERR("Device %s can't be opened in monitor mode\n",device);
+         pcap_perror(handle,(char*)"pcap error: ");
     }
     
     return handle;

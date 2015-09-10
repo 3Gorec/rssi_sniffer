@@ -22,6 +22,9 @@
 #include "radiotap-parser.h"
 
 
+#define u_int16_t uint16_t
+#define u_int32_t uint32_t
+
 /*
  * Radiotap header iteration
  *   implemented in src/radiotap-parser.c
