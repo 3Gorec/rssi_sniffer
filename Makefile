@@ -10,7 +10,7 @@ CPP_OBJECTS=$(CPP_SOURCES:.cpp=.o)
 CPP_OBJECTS:=$(patsubst src/%,%,$(CPP_OBJECTS))
 OBJECTS=$(CPP_OBJECTS) $(C_OBJECTS)
 INCDIR=inc
-LDFLAGS=-lpcap -lprotobuf -lpthread
+LDFLAGS=-lprotobuf -lpthread
 TARGET=rssi_aggregator
 
 all: build
