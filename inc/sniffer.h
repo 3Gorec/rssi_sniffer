@@ -13,7 +13,12 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include <pcap/pcap.h>
+#include <sys/time.h>
+
+typedef	uint8_t u_int8_t;
+typedef	uint16_t u_int16_t;
+typedef	uint32_t u_int32_t;
+typedef	uint64_t u_int64_t;
 
 #define MAX_RSSI_RECORDS_PER_INTERVAL   300       
 #define MAC_LEN                         6
