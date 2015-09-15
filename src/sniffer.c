@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <err.h>
 #include <pthread.h>
+#include <sys/socket.h>
 
 #include "sniffer.h"
 
@@ -46,8 +47,6 @@ static char mutex_init=0;
 
 /* for select */
 static fd_set read_fds;
-static fd_set write_fds;	//todo убрать?
-static fd_set excpt_fds;	//todo убрать?
 static struct timeval tv;	//todo убрать?
 
 tSnifferConfig conf;
@@ -139,22 +138,19 @@ void SnifferInit(int capture_period, char *dev){
 //----------------------------------
 
 int SnifferLoop(){
-    DEBUG_PRINT("Sniffer loop started\n");
+	DEBUG_PRINT("Sniffer loop started\n");
     conf.sniffer_status=sns_run;
     for ( /* ever */ ;;)
 	{
     	int ret;
 
 		FD_ZERO(&read_fds);
-		FD_ZERO(&write_fds);
-		FD_ZERO(&excpt_fds);
-
 		FD_SET(conf.handle, &read_fds);
 
 		tv.tv_sec = 0;
 		tv.tv_usec = 1000000;
 
-		ret = select(conf.handle, &read_fds, &write_fds, &excpt_fds, &tv);
+		ret = select(conf.handle+1, &read_fds, 0, 0, &tv);
 		if (ret == -1 && errno == EINTR) /* interrupted */
 			return 0;
 
@@ -164,7 +160,6 @@ int SnifferLoop(){
 
 		/*local packet*/
 		if (FD_ISSET(conf.handle, &read_fds)) {
-				DEBUG_PRINT("111\n");
 				local_receive_packet(conf.handle, buffer, sizeof(buffer));
 		}
 	}
