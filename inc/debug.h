@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+
+#define DEBUG
     
 #ifdef DEBUG
     #define DEBUG_TEST  1

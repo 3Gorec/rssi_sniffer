@@ -195,7 +195,7 @@ void ProcessQuery(SnifferQuery *query, SnifferResponse *response){
     switch(query->type()){                    
         case STATUS_REQUEST:
             response->set_type(STATUS);
-            switch(sniffer_status){
+            switch(conf.sniffer_status){
                 case sns_run:
                     response->set_status(SNIFFING_RUN);
                     response->set_accum_period(GetPeriod());

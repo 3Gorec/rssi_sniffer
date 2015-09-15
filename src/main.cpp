@@ -15,10 +15,14 @@
 using namespace std;
 
 
-static void CloseSniffer();
+static void CloseSniffer(void);
 
-int main(int argc, char** argv) {    
-    if(argc!=5){
+int handle=0;
+
+
+int main(int argc, char** argv) {
+
+	if(argc!=5){
         DEBUG_PRINTERR("Invalid arguments\n"
                 "rssi_aggregator [interface to sniffing][accumulating period][interface to connect][port to connect]\n");
         exit(EXIT_FAILURE);
@@ -27,27 +31,31 @@ int main(int argc, char** argv) {
     
     char *dev=argv[1];  /*default interface*/             
     int interval=atoi(argv[2]);
-    ServerInfo serv_info={argv[3],argv[4]}; //todo считать из аргументов
+    ServerInfo serv_info={argv[3],argv[4]};
     pthread_t serv_handle;    
     char network_int;    
+
     
-    SetDevice(dev);
-    
-    if(pthread_create(&serv_handle,NULL,server_thread,(void *)&serv_info)){
+    if(pthread_create(&serv_handle,NULL,server_thread,(void *)&serv_info)){	//Create server thread
         DEBUG_PRINTERR("Error thread\n");
         exit(EXIT_FAILURE);
     }
         
-    if(SnifferStart(interval)!=0){
-        exit(EXIT_FAILURE);
+    SnifferInit(interval,dev);
+
+    if(conf.init_flag){
+    	atexit(&CloseSniffer);
+		SnifferLoop();
     }
-    atexit(&CloseSniffer);
-    SnifferLoop();    
-    DEBUG_PRINTERR("Sniffer abort\n");
+    else{
+    	DEBUG_PRINTERR("Error thread\n");
+		exit(EXIT_FAILURE);
+    }
     
     exit(0);
 }
 
-static void CloseSniffer(){
-    SnifferStop();
+static void CloseSniffer(void){
+	//todo корректно убить поток сервера и закрыть все сокеты
+	SnifferClose();
 }
