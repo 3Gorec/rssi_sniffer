@@ -44,7 +44,6 @@ static sCapturedDataSet *process_ds=&data_set_0;
 static pthread_mutex_t data_mutex;
 static char mutex_init=0;
 
-
 /* for select */
 static fd_set read_fds;
 static struct timeval tv;	//todo убрать?
@@ -113,7 +112,7 @@ void SnifferInit(int capture_period, char *dev){
 
     conf.sniffer_status=sns_stoped;
 
-    if(!mutex_init){		//todo зачем?
+    if(!mutex_init){
         pthread_mutex_init(&data_mutex,NULL);
         mutex_init=1;
     }
@@ -202,10 +201,10 @@ static void local_receive_packet(int fd, unsigned char* buffer, size_t bufsize)
 //----------------------------------
 
 void PacketProcess(struct packet_info *p){
-//void PacketProcess(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
 
 	int status=0;
     sCapturedRSSI rssi_data;
+    struct timeval ts;
     ++capture_packet_counter;
 
 	if(p->phy_signal!=0){
@@ -227,8 +226,8 @@ void PacketProcess(struct packet_info *p){
 
 	DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
 	PrintCapturedData(&rssi_data);
-
-	//AddToDataSet(&rssi_data,header->ts);
+	gettimeofday(&ts,NULL);
+	AddToDataSet(&rssi_data,ts);
 
 }
 
@@ -250,14 +249,13 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 }
 
 //----------------------------------
-/*
 void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
     int i,j;
     if(process_ds->ts.tv_sec==0){   //В случае если данная запись - первая с запуска программы
         process_ds->ts=ts;        
     }
     DEBUG_PRINT("\tHeader tv_sec=%d\n",ts.tv_sec);    
-    if(ts.tv_sec-process_ds->ts.tv_sec>=capture_inerval_s){   //Начало нового секундного интервала
+    if(ts.tv_sec-process_ds->ts.tv_sec>=conf.capture_inerval_s){   //Начало нового секундного интервала
         CapturedData_Lock();        
         process_ds->valid=1;
         ready_ds=process_ds;
@@ -287,7 +285,6 @@ void AddToDataSet(sCapturedRSSI *rssi_data, struct timeval ts){
         }
     }
 }
-*/
 //----------------------------------
 
 int GetPeriod(){
@@ -297,17 +294,15 @@ int GetPeriod(){
 //----------------------------------
 
 void CapturedData_Lock(){
-    if(mutex_init){	//todo while???
+    while(!mutex_init);
         pthread_mutex_lock(&data_mutex);
-    }
 }
 
 //----------------------------------
 
 void CapturedData_Unlock(){
-    if(mutex_init){
+	while(!mutex_init);
         pthread_mutex_unlock(&data_mutex);
-    }
 }
 
 //----------------------------------

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "sniffer.h"
 #include "util.h"
 #include "wlan80211.h"
