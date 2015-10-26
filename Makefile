@@ -11,7 +11,7 @@ CPP_OBJECTS:=$(patsubst src/%,%,$(CPP_OBJECTS))
 OBJECTS=$(CPP_OBJECTS) $(C_OBJECTS)
 INCDIR=inc
 LDFLAGS=-lprotobuf -lpthread
-TARGET=rssi_aggregator
+TARGET=rssi_sniffer
 
 all: build
 
