@@ -98,13 +98,13 @@ typedef	uint64_t u_int64_t;
 typedef enum{sns_run,sns_stoped}tSnifferStatus;
 
 typedef struct  {
-	int handle;
-	char init_flag;
-	char		ifname[255];
-	int capture_inerval_s;
-	int			arphrd; // the device ARP type
-	unsigned char		my_mac_addr[MAC_LEN];
-	tSnifferStatus sniffer_status;
+    int handle;
+    int capture_inerval_s;
+    char init_flag;
+    char		ifname[255];	
+    int			arphrd; // the device ARP type
+    unsigned char		my_mac_addr[MAC_LEN];
+    tSnifferStatus sniffer_status;
 }tSnifferConfig;
 
 extern tSnifferConfig conf;
