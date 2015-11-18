@@ -118,21 +118,19 @@ static int InitTimer(int interval){
     timer_t timerid;   
     struct sigevent sev;
     struct itimerspec its;
-    
     sev.sigev_notify=SIGEV_THREAD;
     sev.sigev_notify_function =SniffingInervalTick;
     sev.sigev_notify_attributes = NULL;
     sev.sigev_value.sival_ptr = &timerid;
-    
     its.it_interval.tv_sec=interval;
     its.it_interval.tv_nsec=0;
     its.it_value.tv_sec=interval;
     its.it_value.tv_nsec=0;
-    if(timer_create(CLOCK_REALTIME,&sev,&timerid)==-1){
+    if(timer_create(CLOCK_MONOTONIC,&sev,&timerid)!=0){
         DEBUG_PRINTERR("Error timer\n");
         exit(EXIT_FAILURE);
     }
-    timer_settime(&timerid,0,&its,NULL);   
+    timer_settime(timerid,0,&its,NULL);
 }
 
 //----------------------------------
@@ -317,8 +315,8 @@ void AddToDataSet(sCapturedRSSI *rssi_data){
 void SwitchDataStructs(){
     struct timeval ts;
     gettimeofday(&ts,NULL);
-    CapturedData_Lock();        
-        process_ds->valid=1;
+    CapturedData_Lock();
+    	process_ds->valid=1;
         ready_ds=process_ds;
         if(process_ds==&data_set_0){   
             process_ds=&data_set_1;
