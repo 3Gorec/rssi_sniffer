@@ -20,6 +20,7 @@ extern "C" {
 #else
     #define DEBUG_TEST 0
     #define DEBUG_ERROR 1
+	#include <stdio.h>
 #endif
     
 #define DEBUG_PRINT(...) \

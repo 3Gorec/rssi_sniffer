@@ -26,10 +26,10 @@ prepare:
 	@if [ ! -d $(BUILD_DIR) ] ; then mkdir $(BUILD_DIR) ;fi
 
 %.o: $(SRC_DIR)%.cpp prepare
-	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)$@ -c $< -I$(INCDIR) -DDEBUG
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)$@ -c $< -I$(INCDIR) 
 
 %.o: $(SRC_DIR)%.c prepare
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)$@ -c $< -I$(INCDIR) -DDEBUG
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)$@ -c $< -I$(INCDIR) 
 
 
 clean:

@@ -20,7 +20,7 @@ typedef	uint16_t u_int16_t;
 typedef	uint32_t u_int32_t;
 typedef	uint64_t u_int64_t;
 
-#define MAX_RSSI_RECORDS_PER_INTERVAL   300       
+#define MAX_RSSI_RECORDS_PER_INTERVAL   1000
 #define MAC_LEN                         6
 #define WLAN_MAX_SSID_LEN	34
 

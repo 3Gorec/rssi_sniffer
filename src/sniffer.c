@@ -270,8 +270,8 @@ void PacketProcess(struct packet_info *p){
 		return;
 	}
 
-	DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
-	PrintCapturedData(&rssi_data);	
+	//DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
+	//PrintCapturedData(&rssi_data); obsoleted debug output
 	AddToDataSet(&rssi_data);
 
 }
@@ -297,7 +297,7 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 void AddToDataSet(sCapturedRSSI *rssi_data){
     int i,j;
     
-    if(process_ds->records_count<MAX_RSSI_RECORDS_PER_INTERVAL){    //сохранение данных за текущий интервал
+    if(process_ds->records_count < MAX_RSSI_RECORDS_PER_INTERVAL){    //сохранение данных за текущий интервал
         i=process_ds->records_count;
         process_ds->rssi_data[i].rssi=rssi_data->rssi;
         for(j=0;j<MAC_LEN;++j){
