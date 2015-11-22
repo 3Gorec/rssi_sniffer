@@ -2,3 +2,5 @@
 /dist
 /build
 .dep.inc
+.project
+.cproject

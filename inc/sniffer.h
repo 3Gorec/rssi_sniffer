@@ -20,7 +20,7 @@ typedef	uint16_t u_int16_t;
 typedef	uint32_t u_int32_t;
 typedef	uint64_t u_int64_t;
 
-#define MAX_RSSI_RECORDS_PER_INTERVAL   1000
+#define RSSI_BUFFER_SIZE   1000
 #define MAC_LEN                         6
 #define WLAN_MAX_SSID_LEN	34
 
@@ -109,11 +109,6 @@ typedef struct  {
 
 extern tSnifferConfig conf;
 
-typedef struct{    
-    uint8_t mac[MAC_LEN];
-    int8_t rssi;
-}sCapturedRSSI;
-
 struct packet_info {
 	/* general */
 	unsigned int		pkt_types;	/* bitmask of packet types */
@@ -166,34 +161,22 @@ struct packet_info {
 	int			wlan_retries;	/* retry count for this frame */
 };
 
-
-
-/*!Структура предназначена для хранения данных собранных за интервал времени
- * с последующей передачей их по сети*/
 typedef struct{
-   char valid;  //флаг валидность 0 - невалидно !0 - валидно
-   struct timeval ts;   //временная метка
-   int records_count;     
-   sCapturedRSSI rssi_data[MAX_RSSI_RECORDS_PER_INTERVAL];  
-}sCapturedDataSet; 
+    uint8_t mac[MAC_LEN];
+    int8_t rssi;
+}sCapturedRSSI;
 
 /*!Инициализаци сниффера*/
-void SnifferInit(int capture_period, char *dev);
+void SnifferInit(char *dev);
 
 /*!Главный цикл*/
 int SnifferLoop();
 
 void SnifferClose();
 
-/*!Возвращает период накопления данных снифером*/
-int GetPeriod();
+/*!Copy all records start from start_id to buffer */
+int GetRecords(uint16_t start_id, sCapturedRSSI *buffer);
 
-void CapturedData_Lock();
-
-void CapturedData_Unlock();
-
-
-extern sCapturedDataSet *ready_ds;
 extern tSnifferStatus sniffer_status;
 
 #ifdef	__cplusplus

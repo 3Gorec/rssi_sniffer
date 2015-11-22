@@ -22,16 +22,15 @@ int handle=0;
 
 int main(int argc, char** argv) {
 
-	if(argc!=5){
+	if(argc!=4){
         DEBUG_PRINTERR("Invalid arguments\n"
-                "rssi_aggregator [interface to sniffing][accumulating period][interface to connect][port to connect]\n");
+                "rssi_aggregator [interface to sniffing][interface to connect][port to connect]\n");
         exit(EXIT_FAILURE);
     }
            
     
-    char *dev=argv[1];  /*default interface*/             
-    int interval=atoi(argv[2]);
-    ServerInfo serv_info={argv[3],argv[4]};
+    char *dev=argv[1];  /*default interface*/
+    ServerInfo serv_info={argv[2],argv[3]};
     pthread_t serv_handle;    
     char network_int;    
 
@@ -41,7 +40,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
         
-    SnifferInit(interval,dev);
+    SnifferInit(dev);
 
     if(conf.init_flag){
     	atexit(&CloseSniffer);

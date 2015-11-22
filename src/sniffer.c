@@ -27,6 +27,14 @@
 
 //----------------TYPES-------------------------
 
+/*!Структура содержит кольцевой буффер и предназначена для хранения данных
+ * с последующей передачей их по сети*/
+typedef struct{
+   int cur_index;
+   int records_count;
+   sCapturedRSSI rssi_data[RSSI_BUFFER_SIZE];
+   uint16_t id_array[RSSI_BUFFER_SIZE];
+}sCapturedDataCircular;
 
 //----------------GLOBAL VARS-------------------
 
@@ -37,10 +45,7 @@ static unsigned char buffer[2312 + 200];
 
 static unsigned int capture_packet_counter=0;    //Используется для отладочного вывода номер пакета
 
-static sCapturedDataSet data_set_0={.valid=0,.ts={0,0},.records_count=0};
-static sCapturedDataSet data_set_1={.valid=0,.ts={0,0},.records_count=0};;
-sCapturedDataSet *ready_ds=0;
-static sCapturedDataSet *process_ds=&data_set_0;
+static sCapturedDataCircular captured_data={.cur_index=0, .records_count=0};
 
 
 static pthread_mutex_t data_mutex;
@@ -50,19 +55,13 @@ static char mutex_init=0;
 static fd_set read_fds;
 static struct timeval tv;	//todo убрать?
 
+#define ID_LIMIT 65000
+static uint16_t global_id=1;	//zero - reserved id to indicate first request in series
+
 tSnifferConfig conf;
 
+
 //----------------PROTOTYPES--------------------
-
-/*!Устанавливает период наакопления данных
- * capture_period - длина периода в секундах*/
-static int SetPeriod(int capture_period);
-
-/*!Подготавлевает структуры дла накопления данных*/
-static void PrepareStructures();
-
-/*!Настраивает переключение структур по таймеру*/
-static int InitTimer(int interval);
 
 /*!Установка интерфейса для сниффинга dev - имя интерфейса*/
 static void SetDevice(char *dev);
@@ -79,11 +78,13 @@ static void PrintCapturedData(sCapturedRSSI *rssi_data);
 /*!Добавляет заснифаные данные к массиву сохраненных данных. Манипулирует массивами при необходимости*/
 static void AddToDataSet(sCapturedRSSI *rssi_data);
 
-/*!Колбек вызываемый по таймеру*/
-static void SniffingInervalTick(union sigval sv);
+/*!Захватывает мьютекс доступа к данным*/
+void CapturedData_Lock();
 
-/*!Переключает буферы по истечению интервала*/
-static void SwitchDataStructs();
+/*!Освобождает мьютекс доступа к данным*/
+void CapturedData_Unlock();
+
+static uint16_t GetId(void);
 
 static void local_receive_packet(int fd, unsigned char* buffer, size_t bufsize);
 
@@ -96,64 +97,16 @@ static void SetDevice(char *dev){
 
 //----------------------------------
 
-static void PrepareStructures(){
-    struct timeval ts;
-    gettimeofday(&ts,NULL);
-    process_ds=&data_set_0;
-    ready_ds=0;
-    data_set_0.records_count=0;
-    data_set_0.valid=0;
-    data_set_0.ts.tv_sec=0;
-    data_set_0.ts.tv_usec=0;
-    data_set_1.records_count=0;
-    data_set_1.valid=0;
-    data_set_1.ts.tv_sec=0;
-    data_set_1.ts.tv_usec=0;
-    process_ds->ts=ts;
-}
-
-//----------------------------------
-
-static int InitTimer(int interval){
-    timer_t timerid;   
-    struct sigevent sev;
-    struct itimerspec its;
-    sev.sigev_notify=SIGEV_THREAD;
-    sev.sigev_notify_function =SniffingInervalTick;
-    sev.sigev_notify_attributes = NULL;
-    sev.sigev_value.sival_ptr = &timerid;
-    its.it_interval.tv_sec=interval;
-    its.it_interval.tv_nsec=0;
-    its.it_value.tv_sec=interval;
-    its.it_value.tv_nsec=0;
-    if(timer_create(CLOCK_MONOTONIC,&sev,&timerid)!=0){
-        DEBUG_PRINTERR("Error timer\n");
-        exit(EXIT_FAILURE);
-    }
-    timer_settime(timerid,0,&its,NULL);
-}
-
-//----------------------------------
-
-void SnifferInit(int capture_period, char *dev){
+void SnifferInit(char *dev){
     int handle=0;
     conf.handle=0;
     conf.init_flag=0;
-
-    
-    if(SetPeriod(capture_period)!=0){
-         DEBUG_PRINTERR("Error, wrong accumulation period\n");
-         return;
-    }
     
     if(dev[0]==0){
 	   DEBUG_PRINTERR("Error: device didn't setted\n");
 	   return;
 	}
     SetDevice(dev);
-    
-    PrepareStructures();
-    InitTimer(conf.capture_inerval_s);
     
     conf.sniffer_status=sns_stoped;
 
@@ -246,7 +199,6 @@ static void local_receive_packet(int fd, unsigned char* buffer, size_t bufsize)
 //----------------------------------
 
 void PacketProcess(struct packet_info *p){
-
 	int status=0;
     sCapturedRSSI rssi_data;    
     ++capture_packet_counter;
@@ -259,7 +211,6 @@ void PacketProcess(struct packet_info *p){
 		return;
 	}
 
-
 	if(p->wlan_src[0]!=0){
 		CopyMAC(p->wlan_src,rssi_data.mac);
 	}
@@ -271,7 +222,6 @@ void PacketProcess(struct packet_info *p){
 	//DEBUG_PRINT("Packet %d:\n",capture_packet_counter);
 	//PrintCapturedData(&rssi_data); obsoleted debug output
 	AddToDataSet(&rssi_data);
-
 }
 
 //----------------------------------
@@ -293,63 +243,26 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 
 //----------------------------------
 void AddToDataSet(sCapturedRSSI *rssi_data){
-    int i,j;
-    
-    if(process_ds->records_count < MAX_RSSI_RECORDS_PER_INTERVAL){    //сохранение данных за текущий интервал
-        i=process_ds->records_count;
-        process_ds->rssi_data[i].rssi=rssi_data->rssi;
-        for(j=0;j<MAC_LEN;++j){
-            process_ds->rssi_data[i].mac[j]=rssi_data->mac[j];
-        }
-        ++process_ds->records_count;
-        if(process_ds==&data_set_0){   
-            DEBUG_PRINT("\tHeader added to bank 0\n");
-        }
-        else{
-            DEBUG_PRINT("\tHeader added to bank 1\n");
-        }
-    }
-}
-//----------------------------------
+	int i,j;
+	CapturedData_Lock();
+	int index=captured_data.cur_index;
+	captured_data.id_array[index]=GetId();
+	captured_data.rssi_data[index].rssi=rssi_data->rssi;
+	for(i=0;j<MAC_LEN;++i){
+		captured_data.rssi_data[index].mac[i]=rssi_data->mac[i];
+	}
 
-void SwitchDataStructs(){
-    struct timeval ts;
-    gettimeofday(&ts,NULL);
-    CapturedData_Lock();
-    	process_ds->valid=1;
-        ready_ds=process_ds;
-        if(process_ds==&data_set_0){   
-            process_ds=&data_set_1;
-        }
-        else{
-            process_ds=&data_set_0;
-        }
-        process_ds->valid=0;
-        process_ds->ts=ts;
-        process_ds->records_count=0;
-    CapturedData_Unlock();
-}
+	if(index<RSSI_BUFFER_SIZE-1){
+		++(captured_data.cur_index);
+	}
+	else{
+		captured_data.cur_index=0;
+	}
 
-//----------------------------------
-
-static void SniffingInervalTick(union sigval sv){
-    SwitchDataStructs();
-}
-
-//----------------------------------
-
-static int SetPeriod(int capture_period){
-    if(capture_period<MIN_CAPTURE_PERIOD || capture_period>MAX_CAPTURE_PERIOD){
-        return -1;
-    }
-    conf.capture_inerval_s=capture_period;
-    return 0;
-}
-
-//----------------------------------
-
-int GetPeriod(){
-    return conf.capture_inerval_s;
+	if(captured_data.records_count<RSSI_BUFFER_SIZE){
+		++(captured_data.records_count);
+	}
+	CapturedData_Unlock();
 }
 
 //----------------------------------
@@ -367,3 +280,47 @@ void CapturedData_Unlock(){
 }
 
 //----------------------------------
+
+static uint16_t GetId(void){
+	uint16_t result=global_id;
+	if(global_id<ID_LIMIT){
+		++global_id;
+	}
+	else{
+		global_id=1;
+	}
+	return result;
+}
+
+//----------------------------------
+
+int GetRecords(uint16_t start_id, sCapturedRSSI *buffer){
+	int i;
+	int index;
+	int total_count=0;
+	CapturedData_Lock();
+	if(start_id==0){
+		index=captured_data.cur_index;
+	}
+	else{
+		for(i=0;i<RSSI_BUFFER_SIZE;++i){
+			if(captured_data.id_array[i]==start_id){
+				index=i;
+				break;
+			}
+		}
+	}
+
+	//todo реализовать уже сильно спать охота
+
+	CapturedData_Unlock();
+	return total_count;
+}
+
+//----------------------------------
+
+
+
+
+
+

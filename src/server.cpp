@@ -19,6 +19,8 @@
 
 #define BUF_SIZE    5120
 
+sCapturedRSSI rssi_buf[RSSI_BUFFER_SIZE];
+
 //--------------PROTOTYPES----------
 
 static void ProcessQuery(SnifferQuery *query, SnifferResponse *response);
@@ -41,7 +43,8 @@ static int SendData(int socket, void *buf,int len);
 
 static int SendMsg(int socket, void *buffer, int buffer_size);
 
-static void PackData(SnifferResponse *response);
+static void PackData(uint16_t record_id, SnifferResponse *response);
+
 //--------------CODE----------------
 
 void *server_thread(void *vptr_args){         
@@ -137,7 +140,7 @@ int ServerInit(ServerInfo *serv_info){
         DEBUG_PRINTERR("Failed to bind\n");
         exit(EXIT_FAILURE);
     }
-    freeaddrinfo(server_addr_list); // all done with this structure
+    freeaddrinfo(server_addr_list); // all done wiRSSI_BUFFER_SIZEth this structure
             
     //Listen
     if (listen(server_sock, 5) == -1) {
@@ -192,13 +195,13 @@ void ServiceClient(int client_sock){
 
 void ProcessQuery(SnifferQuery *query, SnifferResponse *response){    
     int status=0;
+    uint16_t record_id=0;	//todo реализовать получение ид из запроса
     switch(query->type()){                    
         case STATUS_REQUEST:
             response->set_type(STATUS);
             switch(conf.sniffer_status){
                 case sns_run:
                     response->set_status(SNIFFING_RUN);
-                    response->set_accum_period(GetPeriod());
                     break;
                 case sns_stoped:
                     response->set_status(SNIFFING_STOPED);
@@ -209,7 +212,7 @@ void ProcessQuery(SnifferQuery *query, SnifferResponse *response){
             break;
         case DATA_REQUEST:            
             response->set_type(DATA);
-            PackData(response);
+            PackData(record_id,response);
             break;        
         default:            
             break;
@@ -289,24 +292,23 @@ int SendMsg(int socket, void *buffer, int buffer_size){
 
 //---------------------
 
-static void PackData(SnifferResponse *response){
-    CapturedData_Lock();    
-    if(ready_ds!=0){
-        SnifferResponse_Timeval *ts;                
-        SnifferResponse_RSSIRecord *record;
-        ts=response->mutable_ts();
-        ts->set_tv_sec(ready_ds->ts.tv_sec);
-        ts->set_tv_usec(ready_ds->ts.tv_usec);        
-        response->set_valid((bool)ready_ds->valid);        
-        DEBUG_PRINT("Pack: record_count=%d\n",ready_ds->records_count);
-        for(int i=0;i<ready_ds->records_count;++i){        
-            record=response->add_rssi_data();
-            record->set_mac((void*)ready_ds->rssi_data[i].mac,MAC_LEN);
-            record->set_rssi(ready_ds->rssi_data[i].rssi);            
-        }
-    }
-    else{
-        response->set_valid(0);
-    }   
-    CapturedData_Unlock();    
+static void PackData(uint16_t record_id, SnifferResponse *response){
+	int count=GetRecords(record_id,rssi_buf);
+	SnifferResponse_RSSIRecord *record;
+
+	DEBUG_PRINT("Pack: record count=%d\n",count);
+	for(int i=0;i<count;++i){
+		record=response->add_rssi_data();
+		record->set_mac(rssi_buf[i].mac,MAC_LEN);
+		record->set_rssi(rssi_buf[i].rssi);
+	}
 }
+
+
+
+
+//----------------------------
+
+
+
+
