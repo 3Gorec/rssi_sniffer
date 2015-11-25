@@ -33,7 +33,7 @@ typedef struct{
    int cur_index;
    int records_count;
    sCapturedRSSI rssi_data[RSSI_BUFFER_SIZE];
-   uint16_t id_array[RSSI_BUFFER_SIZE];
+   tRssiId id_array[RSSI_BUFFER_SIZE];
 }sCapturedDataCircular;
 
 //----------------GLOBAL VARS-------------------
@@ -56,7 +56,7 @@ static fd_set read_fds;
 static struct timeval tv;	//todo убрать?
 
 #define ID_LIMIT 65000
-static uint16_t global_id=1;	//zero - reserved id to indicate first request in series
+static tRssiId global_id=1;	//zero - reserved id to indicate first request in series
 
 tSnifferConfig conf;
 
@@ -84,7 +84,7 @@ void CapturedData_Lock();
 /*!Освобождает мьютекс доступа к данным*/
 void CapturedData_Unlock();
 
-static uint16_t GetId(void);
+static tRssiId GetId(void);
 
 static void local_receive_packet(int fd, unsigned char* buffer, size_t bufsize);
 
@@ -281,8 +281,8 @@ void CapturedData_Unlock(){
 
 //----------------------------------
 
-static uint16_t GetId(void){
-	uint16_t result=global_id;
+static tRssiId GetId(void){
+	tRssiId result=global_id;
 	if(global_id<ID_LIMIT){
 		++global_id;
 	}
@@ -294,26 +294,68 @@ static uint16_t GetId(void){
 
 //----------------------------------
 
-int GetRecords(uint16_t start_id, sCapturedRSSI *buffer){
+int GetRecords(tRssiId start_id, sCapturedRSSI *buffer, tRssiId *id_arr, uint8_t *interrupted_flag){
 	int i;
-	int index;
+	int start_index=0;
+	int copy_count_1=0;
+	int copy_count_2=0;
 	int total_count=0;
+
+	*interrupted_flag=0;
 	CapturedData_Lock();
-	if(start_id==0){
-		index=captured_data.cur_index;
-	}
-	else{
-		for(i=0;i<RSSI_BUFFER_SIZE;++i){
-			if(captured_data.id_array[i]==start_id){
-				index=i;
-				break;
+		if(start_id!=0){ //get index if start from last particular id
+			for(i=0;i<captured_data.records_count;++i){
+				if(captured_data.id_array[i]==start_id){
+					start_index=i;
+					*interrupted_flag=0;
+					break;
+				}
+			}
+			if(i==captured_data.records_count){	//no last id - flag it
+				*interrupted_flag=1;
 			}
 		}
-	}
 
-	//todo реализовать уже сильно спать охота
-
+		if(captured_data.records_count<RSSI_BUFFER_SIZE){	//buffer not full -> start from 0 index;
+			if(start_id==0 || *interrupted_flag==1){	//all records
+				start_index=0;
+				copy_count_1=captured_data.records_count;
+			}
+			else{				//part of records
+				copy_count_1=captured_data.records_count-start_index;
+			}
+			memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
+			memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+		}
+		else{
+			if(start_id==0 || *interrupted_flag==1){	//all records, circular buffer
+				start_index=captured_data.cur_index;
+				copy_count_1=RSSI_BUFFER_SIZE-captured_data.cur_index;
+				copy_count_2=captured_data.cur_index;
+				memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
+				memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+				memccpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI),copy_count_2);
+				memccpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId),copy_count_2);
+			}
+			else{	//part records
+				if(start_index<captured_data.cur_index){	//buffer part withot interrupt
+					copy_count_1=captured_data.cur_index-start_index;
+					memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
+					memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+				}
+				else{		//buffer part with interrupt
+					copy_count_1=RSSI_BUFFER_SIZE-start_index;
+					copy_count_2=captured_data.cur_index;
+					memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
+					memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+					memccpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI),copy_count_2);
+					memccpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId),copy_count_2);
+				}
+			}
+		}
 	CapturedData_Unlock();
+
+	total_count=copy_count_1+copy_count_2;
 	return total_count;
 }
 

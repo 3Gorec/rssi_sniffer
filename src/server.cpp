@@ -20,6 +20,7 @@
 #define BUF_SIZE    5120
 
 sCapturedRSSI rssi_buf[RSSI_BUFFER_SIZE];
+tRssiId id_buf[RSSI_BUFFER_SIZE];
 
 //--------------PROTOTYPES----------
 
@@ -293,9 +294,10 @@ int SendMsg(int socket, void *buffer, int buffer_size){
 //---------------------
 
 static void PackData(uint16_t record_id, SnifferResponse *response){
-	int count=GetRecords(record_id,rssi_buf);
+	uint8_t interrupt_flag;
 	SnifferResponse_RSSIRecord *record;
 
+	int count=GetRecords(record_id,rssi_buf,id_buf,&interrupt_flag);
 	DEBUG_PRINT("Pack: record count=%d\n",count);
 	for(int i=0;i<count;++i){
 		record=response->add_rssi_data();

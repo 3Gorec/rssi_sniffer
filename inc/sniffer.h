@@ -161,6 +161,8 @@ struct packet_info {
 	int			wlan_retries;	/* retry count for this frame */
 };
 
+typedef uint16_t tRssiId;
+
 typedef struct{
     uint8_t mac[MAC_LEN];
     int8_t rssi;
@@ -174,8 +176,12 @@ int SnifferLoop();
 
 void SnifferClose();
 
-/*!Copy all records start from start_id to buffer */
-int GetRecords(uint16_t start_id, sCapturedRSSI *buffer);
+/*!Copy all records start from starting from element with start_id to buffer
+ * Start id=0 - get all records
+ * buffer - pointer to array of lenght RSSI_BUFFER_SIZE for eceived data
+ * id_arr - pointer to array of lenght RSSI_BUFFER_SIZE for received data
+ * interrupted_flag - when it set, this mean that start id has not been finded (if start_id!=0)*/
+int GetRecords(tRssiId start_id, sCapturedRSSI *buffer, tRssiId *id_arr, uint8_t *interrupted_flag);
 
 extern tSnifferStatus sniffer_status;
 
