@@ -243,25 +243,25 @@ void PrintCapturedData(sCapturedRSSI *rssi_data){
 
 //----------------------------------
 void AddToDataSet(sCapturedRSSI *rssi_data){
-	int i,j;
+	int i;
 	CapturedData_Lock();
-	int index=captured_data.cur_index;
-	captured_data.id_array[index]=GetId();
-	captured_data.rssi_data[index].rssi=rssi_data->rssi;
-	for(i=0;j<MAC_LEN;++i){
-		captured_data.rssi_data[index].mac[i]=rssi_data->mac[i];
-	}
+		int index=captured_data.cur_index;
+		captured_data.id_array[index]=GetId();
+		captured_data.rssi_data[index].rssi=rssi_data->rssi;
+		for(i=0;i<MAC_LEN;++i){
+			captured_data.rssi_data[index].mac[i]=rssi_data->mac[i];
+		}
 
-	if(index<RSSI_BUFFER_SIZE-1){
-		++(captured_data.cur_index);
-	}
-	else{
-		captured_data.cur_index=0;
-	}
+		if(index<RSSI_BUFFER_SIZE-1){
+			++(captured_data.cur_index);
+		}
+		else{
+			captured_data.cur_index=0;
+		}
 
-	if(captured_data.records_count<RSSI_BUFFER_SIZE){
-		++(captured_data.records_count);
-	}
+		if(captured_data.records_count<RSSI_BUFFER_SIZE){
+			++(captured_data.records_count);
+		}
 	CapturedData_Unlock();
 }
 
