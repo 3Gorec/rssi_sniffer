@@ -34,7 +34,6 @@ void protobuf_ShutdownFile_sniffer_2eproto();
 
 class SnifferQuery;
 class SnifferResponse;
-class SnifferResponse_Timeval;
 class SnifferResponse_RSSIRecord;
 
 enum QueryType {
@@ -157,106 +156,24 @@ class SnifferQuery : public ::google::protobuf::Message {
   inline ::QueryType type() const;
   inline void set_type(::QueryType value);
 
+  // optional int32 record_id = 2;
+  inline bool has_record_id() const;
+  inline void clear_record_id();
+  static const int kRecordIdFieldNumber = 2;
+  inline ::google::protobuf::int32 record_id() const;
+  inline void set_record_id(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:SnifferQuery)
  private:
   inline void set_has_type();
   inline void clear_has_type();
+  inline void set_has_record_id();
+  inline void clear_has_record_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   int type_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_sniffer_2eproto();
-  friend void protobuf_AssignDesc_sniffer_2eproto();
-  friend void protobuf_ShutdownFile_sniffer_2eproto();
-
-  void InitAsDefaultInstance();
-  static SnifferQuery* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class SnifferResponse_Timeval : public ::google::protobuf::Message {
- public:
-  SnifferResponse_Timeval();
-  virtual ~SnifferResponse_Timeval();
-
-  SnifferResponse_Timeval(const SnifferResponse_Timeval& from);
-
-  inline SnifferResponse_Timeval& operator=(const SnifferResponse_Timeval& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const SnifferResponse_Timeval& default_instance();
-
-  void Swap(SnifferResponse_Timeval* other);
-
-  // implements Message ----------------------------------------------
-
-  SnifferResponse_Timeval* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const SnifferResponse_Timeval& from);
-  void MergeFrom(const SnifferResponse_Timeval& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional int64 tv_sec = 1;
-  inline bool has_tv_sec() const;
-  inline void clear_tv_sec();
-  static const int kTvSecFieldNumber = 1;
-  inline ::google::protobuf::int64 tv_sec() const;
-  inline void set_tv_sec(::google::protobuf::int64 value);
-
-  // optional int64 tv_usec = 2;
-  inline bool has_tv_usec() const;
-  inline void clear_tv_usec();
-  static const int kTvUsecFieldNumber = 2;
-  inline ::google::protobuf::int64 tv_usec() const;
-  inline void set_tv_usec(::google::protobuf::int64 value);
-
-  // @@protoc_insertion_point(class_scope:SnifferResponse.Timeval)
- private:
-  inline void set_has_tv_sec();
-  inline void clear_has_tv_sec();
-  inline void set_has_tv_usec();
-  inline void clear_has_tv_usec();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::int64 tv_sec_;
-  ::google::protobuf::int64 tv_usec_;
+  ::google::protobuf::int32 record_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -266,7 +183,7 @@ class SnifferResponse_Timeval : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_sniffer_2eproto();
 
   void InitAsDefaultInstance();
-  static SnifferResponse_Timeval* default_instance_;
+  static SnifferQuery* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -343,20 +260,30 @@ class SnifferResponse_RSSIRecord : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 rssi() const;
   inline void set_rssi(::google::protobuf::int32 value);
 
+  // optional int32 id = 3;
+  inline bool has_id() const;
+  inline void clear_id();
+  static const int kIdFieldNumber = 3;
+  inline ::google::protobuf::int32 id() const;
+  inline void set_id(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:SnifferResponse.RSSIRecord)
  private:
   inline void set_has_mac();
   inline void clear_has_mac();
   inline void set_has_rssi();
   inline void clear_has_rssi();
+  inline void set_has_id();
+  inline void clear_has_id();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* mac_;
   ::google::protobuf::int32 rssi_;
+  ::google::protobuf::int32 id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_sniffer_2eproto();
   friend void protobuf_AssignDesc_sniffer_2eproto();
@@ -419,7 +346,6 @@ class SnifferResponse : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  typedef SnifferResponse_Timeval Timeval;
   typedef SnifferResponse_RSSIRecord RSSIRecord;
 
   // accessors -------------------------------------------------------
@@ -431,26 +357,17 @@ class SnifferResponse : public ::google::protobuf::Message {
   inline ::ResponseType type() const;
   inline void set_type(::ResponseType value);
 
-  // optional bool valid = 2;
-  inline bool has_valid() const;
-  inline void clear_valid();
-  static const int kValidFieldNumber = 2;
-  inline bool valid() const;
-  inline void set_valid(bool value);
+  // optional bool interrupted = 2;
+  inline bool has_interrupted() const;
+  inline void clear_interrupted();
+  static const int kInterruptedFieldNumber = 2;
+  inline bool interrupted() const;
+  inline void set_interrupted(bool value);
 
-  // optional .SnifferResponse.Timeval ts = 3;
-  inline bool has_ts() const;
-  inline void clear_ts();
-  static const int kTsFieldNumber = 3;
-  inline const ::SnifferResponse_Timeval& ts() const;
-  inline ::SnifferResponse_Timeval* mutable_ts();
-  inline ::SnifferResponse_Timeval* release_ts();
-  inline void set_allocated_ts(::SnifferResponse_Timeval* ts);
-
-  // repeated .SnifferResponse.RSSIRecord rssi_data = 4;
+  // repeated .SnifferResponse.RSSIRecord rssi_data = 3;
   inline int rssi_data_size() const;
   inline void clear_rssi_data();
-  static const int kRssiDataFieldNumber = 4;
+  static const int kRssiDataFieldNumber = 3;
   inline const ::SnifferResponse_RSSIRecord& rssi_data(int index) const;
   inline ::SnifferResponse_RSSIRecord* mutable_rssi_data(int index);
   inline ::SnifferResponse_RSSIRecord* add_rssi_data();
@@ -459,44 +376,31 @@ class SnifferResponse : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::SnifferResponse_RSSIRecord >*
       mutable_rssi_data();
 
-  // optional .SnifferStatus status = 5;
+  // optional .SnifferStatus status = 4;
   inline bool has_status() const;
   inline void clear_status();
-  static const int kStatusFieldNumber = 5;
+  static const int kStatusFieldNumber = 4;
   inline ::SnifferStatus status() const;
   inline void set_status(::SnifferStatus value);
-
-  // optional int32 accum_period = 6;
-  inline bool has_accum_period() const;
-  inline void clear_accum_period();
-  static const int kAccumPeriodFieldNumber = 6;
-  inline ::google::protobuf::int32 accum_period() const;
-  inline void set_accum_period(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:SnifferResponse)
  private:
   inline void set_has_type();
   inline void clear_has_type();
-  inline void set_has_valid();
-  inline void clear_has_valid();
-  inline void set_has_ts();
-  inline void clear_has_ts();
+  inline void set_has_interrupted();
+  inline void clear_has_interrupted();
   inline void set_has_status();
   inline void clear_has_status();
-  inline void set_has_accum_period();
-  inline void clear_has_accum_period();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   int type_;
-  bool valid_;
-  ::SnifferResponse_Timeval* ts_;
+  bool interrupted_;
   ::google::protobuf::RepeatedPtrField< ::SnifferResponse_RSSIRecord > rssi_data_;
   int status_;
-  ::google::protobuf::int32 accum_period_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_sniffer_2eproto();
   friend void protobuf_AssignDesc_sniffer_2eproto();
@@ -535,52 +439,26 @@ inline void SnifferQuery::set_type(::QueryType value) {
   type_ = value;
 }
 
-// -------------------------------------------------------------------
-
-// SnifferResponse_Timeval
-
-// optional int64 tv_sec = 1;
-inline bool SnifferResponse_Timeval::has_tv_sec() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void SnifferResponse_Timeval::set_has_tv_sec() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void SnifferResponse_Timeval::clear_has_tv_sec() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void SnifferResponse_Timeval::clear_tv_sec() {
-  tv_sec_ = GOOGLE_LONGLONG(0);
-  clear_has_tv_sec();
-}
-inline ::google::protobuf::int64 SnifferResponse_Timeval::tv_sec() const {
-  return tv_sec_;
-}
-inline void SnifferResponse_Timeval::set_tv_sec(::google::protobuf::int64 value) {
-  set_has_tv_sec();
-  tv_sec_ = value;
-}
-
-// optional int64 tv_usec = 2;
-inline bool SnifferResponse_Timeval::has_tv_usec() const {
+// optional int32 record_id = 2;
+inline bool SnifferQuery::has_record_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SnifferResponse_Timeval::set_has_tv_usec() {
+inline void SnifferQuery::set_has_record_id() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void SnifferResponse_Timeval::clear_has_tv_usec() {
+inline void SnifferQuery::clear_has_record_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void SnifferResponse_Timeval::clear_tv_usec() {
-  tv_usec_ = GOOGLE_LONGLONG(0);
-  clear_has_tv_usec();
+inline void SnifferQuery::clear_record_id() {
+  record_id_ = 0;
+  clear_has_record_id();
 }
-inline ::google::protobuf::int64 SnifferResponse_Timeval::tv_usec() const {
-  return tv_usec_;
+inline ::google::protobuf::int32 SnifferQuery::record_id() const {
+  return record_id_;
 }
-inline void SnifferResponse_Timeval::set_tv_usec(::google::protobuf::int64 value) {
-  set_has_tv_usec();
-  tv_usec_ = value;
+inline void SnifferQuery::set_record_id(::google::protobuf::int32 value) {
+  set_has_record_id();
+  record_id_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -679,6 +557,28 @@ inline void SnifferResponse_RSSIRecord::set_rssi(::google::protobuf::int32 value
   rssi_ = value;
 }
 
+// optional int32 id = 3;
+inline bool SnifferResponse_RSSIRecord::has_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SnifferResponse_RSSIRecord::set_has_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SnifferResponse_RSSIRecord::clear_has_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SnifferResponse_RSSIRecord::clear_id() {
+  id_ = 0;
+  clear_has_id();
+}
+inline ::google::protobuf::int32 SnifferResponse_RSSIRecord::id() const {
+  return id_;
+}
+inline void SnifferResponse_RSSIRecord::set_id(::google::protobuf::int32 value) {
+  set_has_id();
+  id_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // SnifferResponse
@@ -706,67 +606,29 @@ inline void SnifferResponse::set_type(::ResponseType value) {
   type_ = value;
 }
 
-// optional bool valid = 2;
-inline bool SnifferResponse::has_valid() const {
+// optional bool interrupted = 2;
+inline bool SnifferResponse::has_interrupted() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SnifferResponse::set_has_valid() {
+inline void SnifferResponse::set_has_interrupted() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void SnifferResponse::clear_has_valid() {
+inline void SnifferResponse::clear_has_interrupted() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void SnifferResponse::clear_valid() {
-  valid_ = false;
-  clear_has_valid();
+inline void SnifferResponse::clear_interrupted() {
+  interrupted_ = false;
+  clear_has_interrupted();
 }
-inline bool SnifferResponse::valid() const {
-  return valid_;
+inline bool SnifferResponse::interrupted() const {
+  return interrupted_;
 }
-inline void SnifferResponse::set_valid(bool value) {
-  set_has_valid();
-  valid_ = value;
-}
-
-// optional .SnifferResponse.Timeval ts = 3;
-inline bool SnifferResponse::has_ts() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void SnifferResponse::set_has_ts() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void SnifferResponse::clear_has_ts() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void SnifferResponse::clear_ts() {
-  if (ts_ != NULL) ts_->::SnifferResponse_Timeval::Clear();
-  clear_has_ts();
-}
-inline const ::SnifferResponse_Timeval& SnifferResponse::ts() const {
-  return ts_ != NULL ? *ts_ : *default_instance_->ts_;
-}
-inline ::SnifferResponse_Timeval* SnifferResponse::mutable_ts() {
-  set_has_ts();
-  if (ts_ == NULL) ts_ = new ::SnifferResponse_Timeval;
-  return ts_;
-}
-inline ::SnifferResponse_Timeval* SnifferResponse::release_ts() {
-  clear_has_ts();
-  ::SnifferResponse_Timeval* temp = ts_;
-  ts_ = NULL;
-  return temp;
-}
-inline void SnifferResponse::set_allocated_ts(::SnifferResponse_Timeval* ts) {
-  delete ts_;
-  ts_ = ts;
-  if (ts) {
-    set_has_ts();
-  } else {
-    clear_has_ts();
-  }
+inline void SnifferResponse::set_interrupted(bool value) {
+  set_has_interrupted();
+  interrupted_ = value;
 }
 
-// repeated .SnifferResponse.RSSIRecord rssi_data = 4;
+// repeated .SnifferResponse.RSSIRecord rssi_data = 3;
 inline int SnifferResponse::rssi_data_size() const {
   return rssi_data_.size();
 }
@@ -791,15 +653,15 @@ SnifferResponse::mutable_rssi_data() {
   return &rssi_data_;
 }
 
-// optional .SnifferStatus status = 5;
+// optional .SnifferStatus status = 4;
 inline bool SnifferResponse::has_status() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void SnifferResponse::set_has_status() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void SnifferResponse::clear_has_status() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void SnifferResponse::clear_status() {
   status_ = 0;
@@ -812,28 +674,6 @@ inline void SnifferResponse::set_status(::SnifferStatus value) {
   assert(::SnifferStatus_IsValid(value));
   set_has_status();
   status_ = value;
-}
-
-// optional int32 accum_period = 6;
-inline bool SnifferResponse::has_accum_period() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void SnifferResponse::set_has_accum_period() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void SnifferResponse::clear_has_accum_period() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void SnifferResponse::clear_accum_period() {
-  accum_period_ = 0;
-  clear_has_accum_period();
-}
-inline ::google::protobuf::int32 SnifferResponse::accum_period() const {
-  return accum_period_;
-}
-inline void SnifferResponse::set_accum_period(::google::protobuf::int32 value) {
-  set_has_accum_period();
-  accum_period_ = value;
 }
 
 

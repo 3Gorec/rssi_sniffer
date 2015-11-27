@@ -24,9 +24,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* SnifferResponse_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SnifferResponse_reflection_ = NULL;
-const ::google::protobuf::Descriptor* SnifferResponse_Timeval_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SnifferResponse_Timeval_reflection_ = NULL;
 const ::google::protobuf::Descriptor* SnifferResponse_RSSIRecord_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SnifferResponse_RSSIRecord_reflection_ = NULL;
@@ -44,8 +41,9 @@ void protobuf_AssignDesc_sniffer_2eproto() {
       "sniffer.proto");
   GOOGLE_CHECK(file != NULL);
   SnifferQuery_descriptor_ = file->message_type(0);
-  static const int SnifferQuery_offsets_[1] = {
+  static const int SnifferQuery_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferQuery, type_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferQuery, record_id_),
   };
   SnifferQuery_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -59,13 +57,11 @@ void protobuf_AssignDesc_sniffer_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SnifferQuery));
   SnifferResponse_descriptor_ = file->message_type(1);
-  static const int SnifferResponse_offsets_[6] = {
+  static const int SnifferResponse_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, type_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, valid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, ts_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, interrupted_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, rssi_data_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, status_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse, accum_period_),
   };
   SnifferResponse_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -78,26 +74,11 @@ void protobuf_AssignDesc_sniffer_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(SnifferResponse));
-  SnifferResponse_Timeval_descriptor_ = SnifferResponse_descriptor_->nested_type(0);
-  static const int SnifferResponse_Timeval_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_Timeval, tv_sec_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_Timeval, tv_usec_),
-  };
-  SnifferResponse_Timeval_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SnifferResponse_Timeval_descriptor_,
-      SnifferResponse_Timeval::default_instance_,
-      SnifferResponse_Timeval_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_Timeval, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_Timeval, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(SnifferResponse_Timeval));
-  SnifferResponse_RSSIRecord_descriptor_ = SnifferResponse_descriptor_->nested_type(1);
-  static const int SnifferResponse_RSSIRecord_offsets_[2] = {
+  SnifferResponse_RSSIRecord_descriptor_ = SnifferResponse_descriptor_->nested_type(0);
+  static const int SnifferResponse_RSSIRecord_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_RSSIRecord, mac_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_RSSIRecord, rssi_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SnifferResponse_RSSIRecord, id_),
   };
   SnifferResponse_RSSIRecord_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -130,8 +111,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SnifferResponse_descriptor_, &SnifferResponse::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SnifferResponse_Timeval_descriptor_, &SnifferResponse_Timeval::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     SnifferResponse_RSSIRecord_descriptor_, &SnifferResponse_RSSIRecord::default_instance());
 }
 
@@ -142,8 +121,6 @@ void protobuf_ShutdownFile_sniffer_2eproto() {
   delete SnifferQuery_reflection_;
   delete SnifferResponse::default_instance_;
   delete SnifferResponse_reflection_;
-  delete SnifferResponse_Timeval::default_instance_;
-  delete SnifferResponse_Timeval_reflection_;
   delete SnifferResponse_RSSIRecord::default_instance_;
   delete SnifferResponse_RSSIRecord_reflection_;
 }
@@ -155,29 +132,25 @@ void protobuf_AddDesc_sniffer_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\rsniffer.proto\"6\n\014SnifferQuery\022&\n\004type\030"
-    "\001 \002(\0162\n.QueryType:\014DATA_REQUEST\"\244\002\n\017Snif"
-    "ferResponse\022!\n\004type\030\001 \002(\0162\r.ResponseType"
-    ":\004DATA\022\r\n\005valid\030\002 \001(\010\022$\n\002ts\030\003 \001(\0132\030.Snif"
-    "ferResponse.Timeval\022.\n\trssi_data\030\004 \003(\0132\033"
-    ".SnifferResponse.RSSIRecord\022\036\n\006status\030\005 "
-    "\001(\0162\016.SnifferStatus\022\024\n\014accum_period\030\006 \001("
-    "\005\032*\n\007Timeval\022\016\n\006tv_sec\030\001 \001(\003\022\017\n\007tv_usec\030"
-    "\002 \001(\003\032\'\n\nRSSIRecord\022\013\n\003mac\030\001 \001(\014\022\014\n\004rssi"
-    "\030\002 \001(\005*1\n\tQueryType\022\022\n\016STATUS_REQUEST\020\000\022"
-    "\020\n\014DATA_REQUEST\020\001*$\n\014ResponseType\022\010\n\004DAT"
-    "A\020\000\022\n\n\006STATUS\020\001*6\n\rSnifferStatus\022\023\n\017SNIF"
-    "FING_STOPED\020\000\022\020\n\014SNIFFING_RUN\020\001B\030\n\014sniff"
-    "er_protB\010prot_buf", 537);
+    "\n\rsniffer.proto\"I\n\014SnifferQuery\022&\n\004type\030"
+    "\001 \002(\0162\n.QueryType:\014DATA_REQUEST\022\021\n\trecor"
+    "d_id\030\002 \001(\005\"\316\001\n\017SnifferResponse\022!\n\004type\030\001"
+    " \002(\0162\r.ResponseType:\004DATA\022\023\n\013interrupted"
+    "\030\002 \001(\010\022.\n\trssi_data\030\003 \003(\0132\033.SnifferRespo"
+    "nse.RSSIRecord\022\036\n\006status\030\004 \001(\0162\016.Sniffer"
+    "Status\0323\n\nRSSIRecord\022\013\n\003mac\030\001 \001(\014\022\014\n\004rss"
+    "i\030\002 \001(\005\022\n\n\002id\030\003 \001(\005*1\n\tQueryType\022\022\n\016STAT"
+    "US_REQUEST\020\000\022\020\n\014DATA_REQUEST\020\001*$\n\014Respon"
+    "seType\022\010\n\004DATA\020\000\022\n\n\006STATUS\020\001*6\n\rSnifferS"
+    "tatus\022\023\n\017SNIFFING_STOPED\020\000\022\020\n\014SNIFFING_R"
+    "UN\020\001B\030\n\014sniffer_protB\010prot_buf", 470);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "sniffer.proto", &protobuf_RegisterTypes);
   SnifferQuery::default_instance_ = new SnifferQuery();
   SnifferResponse::default_instance_ = new SnifferResponse();
-  SnifferResponse_Timeval::default_instance_ = new SnifferResponse_Timeval();
   SnifferResponse_RSSIRecord::default_instance_ = new SnifferResponse_RSSIRecord();
   SnifferQuery::default_instance_->InitAsDefaultInstance();
   SnifferResponse::default_instance_->InitAsDefaultInstance();
-  SnifferResponse_Timeval::default_instance_->InitAsDefaultInstance();
   SnifferResponse_RSSIRecord::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_sniffer_2eproto);
 }
@@ -235,6 +208,7 @@ bool SnifferStatus_IsValid(int value) {
 
 #ifndef _MSC_VER
 const int SnifferQuery::kTypeFieldNumber;
+const int SnifferQuery::kRecordIdFieldNumber;
 #endif  // !_MSC_VER
 
 SnifferQuery::SnifferQuery()
@@ -254,6 +228,7 @@ SnifferQuery::SnifferQuery(const SnifferQuery& from)
 void SnifferQuery::SharedCtor() {
   _cached_size_ = 0;
   type_ = 1;
+  record_id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -290,6 +265,7 @@ SnifferQuery* SnifferQuery::New() const {
 void SnifferQuery::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     type_ = 1;
+    record_id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -314,6 +290,22 @@ bool SnifferQuery::MergePartialFromCodedStream(
           } else {
             mutable_unknown_fields()->AddVarint(1, value);
           }
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(16)) goto parse_record_id;
+        break;
+      }
+
+      // optional int32 record_id = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_record_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &record_id_)));
+          set_has_record_id();
         } else {
           goto handle_uninterpreted;
         }
@@ -345,6 +337,11 @@ void SnifferQuery::SerializeWithCachedSizes(
       1, this->type(), output);
   }
 
+  // optional int32 record_id = 2;
+  if (has_record_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->record_id(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -357,6 +354,11 @@ void SnifferQuery::SerializeWithCachedSizes(
   if (has_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       1, this->type(), target);
+  }
+
+  // optional int32 record_id = 2;
+  if (has_record_id()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->record_id(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -374,6 +376,13 @@ int SnifferQuery::ByteSize() const {
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+    }
+
+    // optional int32 record_id = 2;
+    if (has_record_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->record_id());
     }
 
   }
@@ -406,6 +415,9 @@ void SnifferQuery::MergeFrom(const SnifferQuery& from) {
     if (from.has_type()) {
       set_type(from.type());
     }
+    if (from.has_record_id()) {
+      set_record_id(from.record_id());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -431,6 +443,7 @@ bool SnifferQuery::IsInitialized() const {
 void SnifferQuery::Swap(SnifferQuery* other) {
   if (other != this) {
     std::swap(type_, other->type_);
+    std::swap(record_id_, other->record_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -449,256 +462,9 @@ void SnifferQuery::Swap(SnifferQuery* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int SnifferResponse_Timeval::kTvSecFieldNumber;
-const int SnifferResponse_Timeval::kTvUsecFieldNumber;
-#endif  // !_MSC_VER
-
-SnifferResponse_Timeval::SnifferResponse_Timeval()
-  : ::google::protobuf::Message() {
-  SharedCtor();
-}
-
-void SnifferResponse_Timeval::InitAsDefaultInstance() {
-}
-
-SnifferResponse_Timeval::SnifferResponse_Timeval(const SnifferResponse_Timeval& from)
-  : ::google::protobuf::Message() {
-  SharedCtor();
-  MergeFrom(from);
-}
-
-void SnifferResponse_Timeval::SharedCtor() {
-  _cached_size_ = 0;
-  tv_sec_ = GOOGLE_LONGLONG(0);
-  tv_usec_ = GOOGLE_LONGLONG(0);
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-}
-
-SnifferResponse_Timeval::~SnifferResponse_Timeval() {
-  SharedDtor();
-}
-
-void SnifferResponse_Timeval::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void SnifferResponse_Timeval::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* SnifferResponse_Timeval::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return SnifferResponse_Timeval_descriptor_;
-}
-
-const SnifferResponse_Timeval& SnifferResponse_Timeval::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_sniffer_2eproto();
-  return *default_instance_;
-}
-
-SnifferResponse_Timeval* SnifferResponse_Timeval::default_instance_ = NULL;
-
-SnifferResponse_Timeval* SnifferResponse_Timeval::New() const {
-  return new SnifferResponse_Timeval;
-}
-
-void SnifferResponse_Timeval::Clear() {
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    tv_sec_ = GOOGLE_LONGLONG(0);
-    tv_usec_ = GOOGLE_LONGLONG(0);
-  }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
-}
-
-bool SnifferResponse_Timeval::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
-  ::google::protobuf::uint32 tag;
-  while ((tag = input->ReadTag()) != 0) {
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int64 tv_sec = 1;
-      case 1: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &tv_sec_)));
-          set_has_tv_sec();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(16)) goto parse_tv_usec;
-        break;
-      }
-
-      // optional int64 tv_usec = 2;
-      case 2: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_tv_usec:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &tv_usec_)));
-          set_has_tv_usec();
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectAtEnd()) return true;
-        break;
-      }
-
-      default: {
-      handle_uninterpreted:
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          return true;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
-  return true;
-#undef DO_
-}
-
-void SnifferResponse_Timeval::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // optional int64 tv_sec = 1;
-  if (has_tv_sec()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->tv_sec(), output);
-  }
-
-  // optional int64 tv_usec = 2;
-  if (has_tv_usec()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(2, this->tv_usec(), output);
-  }
-
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* SnifferResponse_Timeval::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // optional int64 tv_sec = 1;
-  if (has_tv_sec()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->tv_sec(), target);
-  }
-
-  // optional int64 tv_usec = 2;
-  if (has_tv_usec()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(2, this->tv_usec(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
-}
-
-int SnifferResponse_Timeval::ByteSize() const {
-  int total_size = 0;
-
-  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // optional int64 tv_sec = 1;
-    if (has_tv_sec()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int64Size(
-          this->tv_sec());
-    }
-
-    // optional int64 tv_usec = 2;
-    if (has_tv_usec()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int64Size(
-          this->tv_usec());
-    }
-
-  }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void SnifferResponse_Timeval::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const SnifferResponse_Timeval* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SnifferResponse_Timeval*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
-}
-
-void SnifferResponse_Timeval::MergeFrom(const SnifferResponse_Timeval& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from.has_tv_sec()) {
-      set_tv_sec(from.tv_sec());
-    }
-    if (from.has_tv_usec()) {
-      set_tv_usec(from.tv_usec());
-    }
-  }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void SnifferResponse_Timeval::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void SnifferResponse_Timeval::CopyFrom(const SnifferResponse_Timeval& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool SnifferResponse_Timeval::IsInitialized() const {
-
-  return true;
-}
-
-void SnifferResponse_Timeval::Swap(SnifferResponse_Timeval* other) {
-  if (other != this) {
-    std::swap(tv_sec_, other->tv_sec_);
-    std::swap(tv_usec_, other->tv_usec_);
-    std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
-    std::swap(_cached_size_, other->_cached_size_);
-  }
-}
-
-::google::protobuf::Metadata SnifferResponse_Timeval::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = SnifferResponse_Timeval_descriptor_;
-  metadata.reflection = SnifferResponse_Timeval_reflection_;
-  return metadata;
-}
-
-
-// -------------------------------------------------------------------
-
-#ifndef _MSC_VER
 const int SnifferResponse_RSSIRecord::kMacFieldNumber;
 const int SnifferResponse_RSSIRecord::kRssiFieldNumber;
+const int SnifferResponse_RSSIRecord::kIdFieldNumber;
 #endif  // !_MSC_VER
 
 SnifferResponse_RSSIRecord::SnifferResponse_RSSIRecord()
@@ -719,6 +485,7 @@ void SnifferResponse_RSSIRecord::SharedCtor() {
   _cached_size_ = 0;
   mac_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   rssi_ = 0;
+  id_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -763,6 +530,7 @@ void SnifferResponse_RSSIRecord::Clear() {
       }
     }
     rssi_ = 0;
+    id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   mutable_unknown_fields()->Clear();
@@ -799,6 +567,22 @@ bool SnifferResponse_RSSIRecord::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(24)) goto parse_id;
+        break;
+      }
+
+      // optional int32 id = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_id:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &id_)));
+          set_has_id();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -832,6 +616,11 @@ void SnifferResponse_RSSIRecord::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->rssi(), output);
   }
 
+  // optional int32 id = 3;
+  if (has_id()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->id(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -850,6 +639,11 @@ void SnifferResponse_RSSIRecord::SerializeWithCachedSizes(
   // optional int32 rssi = 2;
   if (has_rssi()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->rssi(), target);
+  }
+
+  // optional int32 id = 3;
+  if (has_id()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->id(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -875,6 +669,13 @@ int SnifferResponse_RSSIRecord::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->rssi());
+    }
+
+    // optional int32 id = 3;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->id());
     }
 
   }
@@ -910,6 +711,9 @@ void SnifferResponse_RSSIRecord::MergeFrom(const SnifferResponse_RSSIRecord& fro
     if (from.has_rssi()) {
       set_rssi(from.rssi());
     }
+    if (from.has_id()) {
+      set_id(from.id());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -935,6 +739,7 @@ void SnifferResponse_RSSIRecord::Swap(SnifferResponse_RSSIRecord* other) {
   if (other != this) {
     std::swap(mac_, other->mac_);
     std::swap(rssi_, other->rssi_);
+    std::swap(id_, other->id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -954,11 +759,9 @@ void SnifferResponse_RSSIRecord::Swap(SnifferResponse_RSSIRecord* other) {
 
 #ifndef _MSC_VER
 const int SnifferResponse::kTypeFieldNumber;
-const int SnifferResponse::kValidFieldNumber;
-const int SnifferResponse::kTsFieldNumber;
+const int SnifferResponse::kInterruptedFieldNumber;
 const int SnifferResponse::kRssiDataFieldNumber;
 const int SnifferResponse::kStatusFieldNumber;
-const int SnifferResponse::kAccumPeriodFieldNumber;
 #endif  // !_MSC_VER
 
 SnifferResponse::SnifferResponse()
@@ -967,7 +770,6 @@ SnifferResponse::SnifferResponse()
 }
 
 void SnifferResponse::InitAsDefaultInstance() {
-  ts_ = const_cast< ::SnifferResponse_Timeval*>(&::SnifferResponse_Timeval::default_instance());
 }
 
 SnifferResponse::SnifferResponse(const SnifferResponse& from)
@@ -979,10 +781,8 @@ SnifferResponse::SnifferResponse(const SnifferResponse& from)
 void SnifferResponse::SharedCtor() {
   _cached_size_ = 0;
   type_ = 0;
-  valid_ = false;
-  ts_ = NULL;
+  interrupted_ = false;
   status_ = 0;
-  accum_period_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -992,7 +792,6 @@ SnifferResponse::~SnifferResponse() {
 
 void SnifferResponse::SharedDtor() {
   if (this != default_instance_) {
-    delete ts_;
   }
 }
 
@@ -1020,12 +819,8 @@ SnifferResponse* SnifferResponse::New() const {
 void SnifferResponse::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     type_ = 0;
-    valid_ = false;
-    if (has_ts()) {
-      if (ts_ != NULL) ts_->::SnifferResponse_Timeval::Clear();
-    }
+    interrupted_ = false;
     status_ = 0;
-    accum_period_ = 0;
   }
   rssi_data_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1054,42 +849,28 @@ bool SnifferResponse::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_valid;
+        if (input->ExpectTag(16)) goto parse_interrupted;
         break;
       }
 
-      // optional bool valid = 2;
+      // optional bool interrupted = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_valid:
+         parse_interrupted:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &valid_)));
-          set_has_valid();
+                 input, &interrupted_)));
+          set_has_interrupted();
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_ts;
+        if (input->ExpectTag(26)) goto parse_rssi_data;
         break;
       }
 
-      // optional .SnifferResponse.Timeval ts = 3;
+      // repeated .SnifferResponse.RSSIRecord rssi_data = 3;
       case 3: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_ts:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-               input, mutable_ts()));
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(34)) goto parse_rssi_data;
-        break;
-      }
-
-      // repeated .SnifferResponse.RSSIRecord rssi_data = 4;
-      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_rssi_data:
@@ -1098,13 +879,13 @@ bool SnifferResponse::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_rssi_data;
-        if (input->ExpectTag(40)) goto parse_status;
+        if (input->ExpectTag(26)) goto parse_rssi_data;
+        if (input->ExpectTag(32)) goto parse_status;
         break;
       }
 
-      // optional .SnifferStatus status = 5;
-      case 5: {
+      // optional .SnifferStatus status = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_status:
@@ -1115,24 +896,8 @@ bool SnifferResponse::MergePartialFromCodedStream(
           if (::SnifferStatus_IsValid(value)) {
             set_status(static_cast< ::SnifferStatus >(value));
           } else {
-            mutable_unknown_fields()->AddVarint(5, value);
+            mutable_unknown_fields()->AddVarint(4, value);
           }
-        } else {
-          goto handle_uninterpreted;
-        }
-        if (input->ExpectTag(48)) goto parse_accum_period;
-        break;
-      }
-
-      // optional int32 accum_period = 6;
-      case 6: {
-        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
-         parse_accum_period:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &accum_period_)));
-          set_has_accum_period();
         } else {
           goto handle_uninterpreted;
         }
@@ -1164,32 +929,21 @@ void SnifferResponse::SerializeWithCachedSizes(
       1, this->type(), output);
   }
 
-  // optional bool valid = 2;
-  if (has_valid()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->valid(), output);
+  // optional bool interrupted = 2;
+  if (has_interrupted()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->interrupted(), output);
   }
 
-  // optional .SnifferResponse.Timeval ts = 3;
-  if (has_ts()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->ts(), output);
-  }
-
-  // repeated .SnifferResponse.RSSIRecord rssi_data = 4;
+  // repeated .SnifferResponse.RSSIRecord rssi_data = 3;
   for (int i = 0; i < this->rssi_data_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->rssi_data(i), output);
+      3, this->rssi_data(i), output);
   }
 
-  // optional .SnifferStatus status = 5;
+  // optional .SnifferStatus status = 4;
   if (has_status()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      5, this->status(), output);
-  }
-
-  // optional int32 accum_period = 6;
-  if (has_accum_period()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->accum_period(), output);
+      4, this->status(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -1206,34 +960,22 @@ void SnifferResponse::SerializeWithCachedSizes(
       1, this->type(), target);
   }
 
-  // optional bool valid = 2;
-  if (has_valid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->valid(), target);
+  // optional bool interrupted = 2;
+  if (has_interrupted()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->interrupted(), target);
   }
 
-  // optional .SnifferResponse.Timeval ts = 3;
-  if (has_ts()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->ts(), target);
-  }
-
-  // repeated .SnifferResponse.RSSIRecord rssi_data = 4;
+  // repeated .SnifferResponse.RSSIRecord rssi_data = 3;
   for (int i = 0; i < this->rssi_data_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        4, this->rssi_data(i), target);
+        3, this->rssi_data(i), target);
   }
 
-  // optional .SnifferStatus status = 5;
+  // optional .SnifferStatus status = 4;
   if (has_status()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      5, this->status(), target);
-  }
-
-  // optional int32 accum_period = 6;
-  if (has_accum_period()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->accum_period(), target);
+      4, this->status(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1253,33 +995,19 @@ int SnifferResponse::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
     }
 
-    // optional bool valid = 2;
-    if (has_valid()) {
+    // optional bool interrupted = 2;
+    if (has_interrupted()) {
       total_size += 1 + 1;
     }
 
-    // optional .SnifferResponse.Timeval ts = 3;
-    if (has_ts()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->ts());
-    }
-
-    // optional .SnifferStatus status = 5;
+    // optional .SnifferStatus status = 4;
     if (has_status()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
     }
 
-    // optional int32 accum_period = 6;
-    if (has_accum_period()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->accum_period());
-    }
-
   }
-  // repeated .SnifferResponse.RSSIRecord rssi_data = 4;
+  // repeated .SnifferResponse.RSSIRecord rssi_data = 3;
   total_size += 1 * this->rssi_data_size();
   for (int i = 0; i < this->rssi_data_size(); i++) {
     total_size +=
@@ -1317,17 +1045,11 @@ void SnifferResponse::MergeFrom(const SnifferResponse& from) {
     if (from.has_type()) {
       set_type(from.type());
     }
-    if (from.has_valid()) {
-      set_valid(from.valid());
-    }
-    if (from.has_ts()) {
-      mutable_ts()->::SnifferResponse_Timeval::MergeFrom(from.ts());
+    if (from.has_interrupted()) {
+      set_interrupted(from.interrupted());
     }
     if (from.has_status()) {
       set_status(from.status());
-    }
-    if (from.has_accum_period()) {
-      set_accum_period(from.accum_period());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1354,11 +1076,9 @@ bool SnifferResponse::IsInitialized() const {
 void SnifferResponse::Swap(SnifferResponse* other) {
   if (other != this) {
     std::swap(type_, other->type_);
-    std::swap(valid_, other->valid_);
-    std::swap(ts_, other->ts_);
+    std::swap(interrupted_, other->interrupted_);
     rssi_data_.Swap(&other->rssi_data_);
     std::swap(status_, other->status_);
-    std::swap(accum_period_, other->accum_period_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

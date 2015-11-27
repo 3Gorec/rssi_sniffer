@@ -53,7 +53,7 @@ static char mutex_init=0;
 
 /* for select */
 static fd_set read_fds;
-static struct timeval tv;	//todo убрать?
+static struct timeval tv;
 
 #define ID_LIMIT 65000
 static tRssiId global_id=1;	//zero - reserved id to indicate first request in series

@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -196,7 +197,7 @@ void ServiceClient(int client_sock){
 
 void ProcessQuery(SnifferQuery *query, SnifferResponse *response){    
     int status=0;
-    uint16_t record_id=0;	//todo реализовать получение ид из запроса
+    uint16_t record_id;
     switch(query->type()){                    
         case STATUS_REQUEST:
             response->set_type(STATUS);
@@ -211,7 +212,8 @@ void ProcessQuery(SnifferQuery *query, SnifferResponse *response){
                     break;
             }            
             break;
-        case DATA_REQUEST:            
+        case DATA_REQUEST:
+        	record_id=(uint16_t)query->record_id();
             response->set_type(DATA);
             PackData(record_id,response);
             break;        
@@ -303,7 +305,9 @@ static void PackData(uint16_t record_id, SnifferResponse *response){
 		record=response->add_rssi_data();
 		record->set_mac(rssi_buf[i].mac,MAC_LEN);
 		record->set_rssi(rssi_buf[i].rssi);
+		record->set_id(id_buf[i]);
 	}
+	response->set_interrupted((bool)interrupt_flag);
 }
 
 
