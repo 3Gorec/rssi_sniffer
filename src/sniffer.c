@@ -300,7 +300,6 @@ int GetRecords(tRssiId start_id, sCapturedRSSI *buffer, tRssiId *id_arr, uint8_t
 	int copy_count_1=0;
 	int copy_count_2=0;
 	int total_count=0;
-
 	*interrupted_flag=0;
 	CapturedData_Lock();
 		if(start_id!=0){ //get index if start from last particular id
@@ -324,37 +323,36 @@ int GetRecords(tRssiId start_id, sCapturedRSSI *buffer, tRssiId *id_arr, uint8_t
 			else{				//part of records
 				copy_count_1=captured_data.records_count-start_index;
 			}
-			memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
-			memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+			memcpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI)*copy_count_1);
+			memcpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId)*copy_count_1);
 		}
 		else{
 			if(start_id==0 || *interrupted_flag==1){	//all records, circular buffer
 				start_index=captured_data.cur_index;
 				copy_count_1=RSSI_BUFFER_SIZE-captured_data.cur_index;
 				copy_count_2=captured_data.cur_index;
-				memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
-				memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
-				memccpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI),copy_count_2);
-				memccpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId),copy_count_2);
+				memcpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI)*copy_count_1);
+				memcpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId)*copy_count_1);
+				memcpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI)*copy_count_2);
+				memcpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId)*copy_count_2);
 			}
 			else{	//part records
 				if(start_index<captured_data.cur_index){	//buffer part withot interrupt
 					copy_count_1=captured_data.cur_index-start_index;
-					memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
-					memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
+					memcpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI)*copy_count_1);
+					memcpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId)*copy_count_1);
 				}
 				else{		//buffer part with interrupt
 					copy_count_1=RSSI_BUFFER_SIZE-start_index;
 					copy_count_2=captured_data.cur_index;
-					memccpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI),copy_count_1);
-					memccpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId),copy_count_1);
-					memccpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI),copy_count_2);
-					memccpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId),copy_count_2);
+					memcpy((void *)buffer,(void *)(&captured_data.rssi_data[start_index]),sizeof(sCapturedRSSI)*copy_count_1);
+					memcpy((void *)id_arr,(void *)(&captured_data.id_array[start_index]),sizeof(tRssiId)*copy_count_1);
+					memcpy((void *)(&buffer[copy_count_1]),(void *)(&captured_data.rssi_data[0]),sizeof(sCapturedRSSI)*copy_count_2);
+					memcpy((void *)(&id_arr[copy_count_1]),(void *)(&captured_data.id_array[0]),sizeof(tRssiId)*copy_count_2);
 				}
 			}
 		}
 	CapturedData_Unlock();
-
 	total_count=copy_count_1+copy_count_2;
 	return total_count;
 }
