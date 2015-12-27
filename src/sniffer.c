@@ -200,6 +200,7 @@ static void local_receive_packet(int fd, unsigned char* buffer, size_t bufsize)
 
 void PacketProcess(struct packet_info *p){
 	int status=0;
+	int i=0;
     sCapturedRSSI rssi_data;    
     ++capture_packet_counter;
 
@@ -211,10 +212,13 @@ void PacketProcess(struct packet_info *p){
 		return;
 	}
 
-	if(p->wlan_src[0]!=0){
-		CopyMAC(p->wlan_src,rssi_data.mac);
+	for(i=0;i<6;i++){
+		if(p->wlan_src[i]!=0){
+			CopyMAC(p->wlan_src,rssi_data.mac);
+			break;
+		}
 	}
-	else{
+	if(i==6){
 		DEBUG_PRINT("\tExtract MAC error: frame doesn't contain source MAC\n");
 		return;
 	}
