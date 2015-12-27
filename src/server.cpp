@@ -18,8 +18,6 @@
 #include "debug.h"
 //#include "byteorder.h"
 
-#define BUF_SIZE    5120
-
 sCapturedRSSI rssi_buf[RSSI_BUFFER_SIZE];
 tRssiId id_buf[RSSI_BUFFER_SIZE];
 
@@ -38,7 +36,7 @@ static int ReceiveData(int socket, void *buf,int len);
 
 /*!Receive message from socket data len, then buffer.
  * return data_size, -1 - error*/
-static int32_t ReceiveMsg(int socket, void *buffer, int buffer_size);
+static int32_t ReceiveMsg(int socket, char **buffer);
 
 /*!return 0-success; -1-error*/
 static int SendData(int socket, void *buf,int len);
@@ -142,7 +140,7 @@ int ServerInit(ServerInfo *serv_info){
         DEBUG_PRINTERR("Failed to bind\n");
         exit(EXIT_FAILURE);
     }
-    freeaddrinfo(server_addr_list); // all done wiRSSI_BUFFER_SIZEth this structure
+    freeaddrinfo(server_addr_list); // all done with this structure
             
     //Listen
     if (listen(server_sock, 5) == -1) {
@@ -158,19 +156,21 @@ int ServerInit(ServerInfo *serv_info){
 void ServiceClient(int client_sock){
     SnifferQuery query;    
     int32_t data_size=0;
-    char buffer[BUF_SIZE];    
+
     SnifferResponse response;
     std::string input_msg_str;    
     input_msg_str.clear();
     
-    data_size=ReceiveMsg(client_sock,(void *)buffer,BUF_SIZE);
-    if(data_size==-1){    
+    char *rx_buffer;
+    data_size=ReceiveMsg(client_sock,&rx_buffer);
+    if(data_size==-1){
         return;
     }
     
-    input_msg_str.append(buffer, data_size);
+    input_msg_str.append(rx_buffer, data_size);
     if(!query.ParseFromString(input_msg_str)){
-        DEBUG_PRINTERR("Error parsing query\n");        
+        DEBUG_PRINTERR("Error parsing query\n");
+        delete [] rx_buffer;
         return;
     }
     DEBUG_PRINT("Query:\n"
@@ -180,17 +180,18 @@ void ServiceClient(int client_sock){
     
     ProcessQuery(&query,&response); 
     data_size=response.ByteSize();        
-    if(data_size>BUF_SIZE){
-        DEBUG_PRINTERR("Data size(%d bytes) exceed buffer size(%d bytes)\n",data_size,BUF_SIZE);
-        return;
-    }
-    response.SerializeToArray((void*)buffer,data_size);
+    char *tx_buffer=new char[data_size];
+    response.SerializeToArray((void*)tx_buffer,data_size);
     DEBUG_PRINT("response:\n"
             "\tData size=: %d\n"
             "\tMessage: %s\n",data_size,response.DebugString().data());        
-    if(SendMsg(client_sock,buffer,data_size)==-1){
-        return;
+    if(SendMsg(client_sock,tx_buffer,data_size)==-1){
+    	delete [] rx_buffer;
+    	delete [] tx_buffer;
+    	return;
     }
+    delete [] rx_buffer;
+    delete [] tx_buffer;
 }
 
 //---------------------
@@ -243,7 +244,7 @@ int ReceiveData(int socket, void *buf,int len){
 
 //---------------------
 
-int32_t ReceiveMsg(int socket, void *buffer, int buffer_size){
+int32_t ReceiveMsg(int socket, char **buffer){
     int32_t data_size=0;
     //Read incoming data size
     if(ReceiveData(socket,(void *)&data_size,sizeof(data_size))==-1){
@@ -251,12 +252,9 @@ int32_t ReceiveMsg(int socket, void *buffer, int buffer_size){
         return -1;
     }    
     data_size=ntohl(data_size);
-    if(data_size>BUF_SIZE){
-        DEBUG_PRINTERR("Error: too big msg\n");        
-        return -1;
-    }
-   
-    if(ReceiveData(socket,(void *)buffer,data_size)==-1){
+    *buffer=new char[data_size];
+
+    if(ReceiveData(socket,(void *)(*buffer),data_size)==-1){
         close(socket);
         return -1;
     }
